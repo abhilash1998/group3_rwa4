@@ -8,12 +8,20 @@
 void AriacAgv::state_callback(const std_msgs::String::ConstPtr& msg)
 {
     curr_state = msg->data;
-    ROS_INFO_STREAM("Received updated state message: " << curr_state);
+    ROS_DEBUG_STREAM("AGV #"
+                     << number
+                     << " received updated state message: "
+                     << curr_state
+    );
 }
 void AriacAgv::station_callback(const std_msgs::String::ConstPtr& msg)
 {
     curr_station = msg->data;
-    ROS_INFO_STREAM("Received updated station message: " << curr_station);
+    ROS_INFO_STREAM("AGV #"
+                    << number
+                    << " received updated station message: "
+                    << curr_station
+    );
 }
 
 AriacAgv::AriacAgv(ros::NodeHandle* const nh, const int agv_number) :
