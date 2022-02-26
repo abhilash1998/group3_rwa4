@@ -15,7 +15,13 @@ find_package(catkin REQUIRED COMPONENTS
 
 catkin_package()
 
-include_directories(${catkin_INCLUDE_DIRS})
+include_directories(
+  include
+  ${catkin_INCLUDE_DIRS}
+)
 
 add_executable(sdata src/sub_sensor.cpp)
 target_link_libraries(sdata ${catkin_LIBRARIES})
+
+add_executable(sagv src/sub_agv.cpp)
+target_link_libraries(sagv ${catkin_LIBRARIES})
