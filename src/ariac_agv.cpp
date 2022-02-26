@@ -1,11 +1,9 @@
-#include "sub_agv.hpp"
+#include "ariac_agv.hpp"
 
-#include <ros/ros.h>
+#include <ros/node_handle.h>
 #include <nist_gear/AGVToAssemblyStation.h>
 
 #include <vector>
-
-#define NUM_AGVS 4
 
 void AriacAgv::state_callback(const std_msgs::String::ConstPtr& msg)
 {
@@ -85,19 +83,4 @@ bool AriacAgv::submit_shipment(const std::string& assembly_station_name,
     }
 
     return rc;
-}
-
-int main(int argc, char **argv)
-{
-    ros::init(argc, argv, "agv_handler");
-    ros::NodeHandle nh;
-    std::vector<AriacAgv> agvs;
-    for (int i = 0; i < NUM_AGVS; i++)
-    {
-        // AGV topics use identifiers in the range [1,NUM_AGVS], but this loop
-        // is [0,NUM_AGVS-1], so add 1 to all indices when creating them here
-        agvs.push_back(AriacAgv(&nh, i+1));
-    }
-    ros::spin();
-    return 0;
 }

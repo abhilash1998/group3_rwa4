@@ -23,5 +23,5 @@ include_directories(
 add_executable(sdata src/sub_sensor.cpp)
 target_link_libraries(sdata ${catkin_LIBRARIES})
 
-add_executable(sagv src/sub_agv.cpp)
-target_link_libraries(sagv ${catkin_LIBRARIES})
+add_executable(agvs_controller src/ariac_agv.cpp src/agvs_controller.cpp)
+target_link_libraries(agvs_controller ${catkin_LIBRARIES})
