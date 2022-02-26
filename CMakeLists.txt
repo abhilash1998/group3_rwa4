@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.2)
+cmake_minimum_required(VERSION 2.8.3)
 project(group_3_rwa1)
 
 add_compile_options(-std=c++11)
@@ -15,7 +15,9 @@ find_package(catkin REQUIRED COMPONENTS
 
 catkin_package()
 
-include_directories(${catkin_INCLUDE_DIRS})
+include_directories(include ${catkin_INCLUDE_DIRS} src include)
 
-add_executable(sdata src/sub_sensor.cpp)
-target_link_libraries(sdata ${catkin_LIBRARIES})
+add_executable(sd src/main.cpp src/sub_sensor.cpp)
+add_dependencies(sd ${catkin_EXPORTED_TARGETS})
+target_link_libraries(sd ${catkin_LIBRARIES})
+
