@@ -1,4 +1,5 @@
 #include <ros/subscriber.h>
+#include <ros/service_client.h>
 #include <std_msgs/String.h>
 
 #include <string>
@@ -11,8 +12,11 @@ namespace ros {
 class AriacAgv
 {
 protected:
+    const int number;
+
     ros::Subscriber state_sub;
     ros::Subscriber station_sub;
+    ros::ServiceClient submit_shipment_scl;
 
     std::string curr_state;
     std::string curr_station;
@@ -23,4 +27,7 @@ protected:
 public:
     AriacAgv(ros::NodeHandle* const nh, const int agv_number);
     ~AriacAgv();
+
+    bool submit_shipment(const std::string& assembly_station_name,
+                         const std::string& shipment_type);
 };
