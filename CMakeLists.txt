@@ -15,9 +15,14 @@ find_package(catkin REQUIRED COMPONENTS
 
 catkin_package()
 
-include_directories(include ${catkin_INCLUDE_DIRS} src include)
+include_directories(
+  include
+  ${catkin_INCLUDE_DIRS}
+)
 
-add_executable(sd src/main.cpp src/sub_sensor.cpp)
-add_dependencies(sd ${catkin_EXPORTED_TARGETS})
-target_link_libraries(sd ${catkin_LIBRARIES})
+add_executable(sensors_controller src/sensors.cpp src/sensors_controller.cpp)
+add_dependencies(sensors_controller ${catkin_EXPORTED_TARGETS})
+target_link_libraries(sensors_controller ${catkin_LIBRARIES})
 
+add_executable(agvs_controller src/ariac_agv.cpp src/agvs_controller.cpp)
+target_link_libraries(agvs_controller ${catkin_LIBRARIES})
