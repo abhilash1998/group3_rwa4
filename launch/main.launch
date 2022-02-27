@@ -11,4 +11,11 @@
         ns="group_3"
         output="screen"
   />
+  <node name="group_3_sensors_controller"
+        pkg="group_3_rwa1"
+        type="sensors_controller"
+        required="true"
+        ns="group_3"
+        output="screen"
+  />
 </launch>
