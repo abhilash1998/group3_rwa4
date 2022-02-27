@@ -1,13 +1,18 @@
 #include "sub_sensor.hpp"
 
-Sensors::Sensors(ros::NodeHandle nh)
-{
-  n=nh;
+Sensors::Sensors(ros::NodeHandle* const nh){
+n=nh;
 }
 
 void Sensors::break_beam_callback(const nist_gear::Proximity::ConstPtr& msg) {
-    if (msg->object_detected) {  // If there is an object in proximity.
+    if (msg->object_detected) {  
       ROS_INFO_STREAM("Callback triggered for Topic /ariac/breakbeam_0");
+    }
+}
+
+void Sensors::break_beam_change_callback(const nist_gear::Proximity::ConstPtr& msg) {
+    if (msg->object_detected) {  
+      ROS_INFO_STREAM("Callback triggered for Topic /ariac/breakbeam_0_change");
     }
 }
 
@@ -16,15 +21,15 @@ void Sensors::laser_profiler_callback(const sensor_msgs::LaserScan::ConstPtr& ms
   
   if (msg->ranges[200] < 0.62)
   {
-     ROS_INFO_STREAM("Laser profiler sees something.");
+     ROS_INFO_STREAM("Callback triggered for Topic /ariac/laser_profiler_0");
   }
 }
 
 void Sensors::proximity_sensor_callback(const sensor_msgs::Range::ConstPtr& msg)
 {
   if ((msg->range) < 0.14)
-  {  // If there is an object in proximity.
-    ROS_INFO_STREAM("Proximity sensor sees something.");
+  {  
+    ROS_INFO_STREAM("Callback triggered for Topic /ariac/proximity_sensor_0");
   }
 }
 
@@ -33,28 +38,28 @@ void Sensors::quality_callback1(
     const nist_gear::LogicalCameraImage::ConstPtr& image_msg)
   {
     ROS_INFO_STREAM_THROTTLE(10,
-      "Quality camera: '" << image_msg->models.size() << "' objects.");
+      "quality_control_sensor_1: '" << image_msg->models.size() << "' objects.");
   }
 
 void Sensors::quality_callback2(
     const nist_gear::LogicalCameraImage::ConstPtr& image_msg)
   {
     ROS_INFO_STREAM_THROTTLE(10,
-      "Quality camera: '" << image_msg->models.size() << "' objects.");
+      "quality_control_sensor_2: '" << image_msg->models.size() << "' objects.");
   }
 
 void Sensors::quality_callback3(
     const nist_gear::LogicalCameraImage::ConstPtr& image_msg)
   {
     ROS_INFO_STREAM_THROTTLE(10,
-      "Quality camera: '" << image_msg->models.size() << "' objects.");
+      "quality_control_sensor_3: '" << image_msg->models.size() << "' objects.");
   }
 
 void Sensors::quality_callback4(
     const nist_gear::LogicalCameraImage::ConstPtr& image_msg)
   {
     ROS_INFO_STREAM_THROTTLE(10,
-      "Quality camera: '" << image_msg->models.size() << "' objects.");
+      "quality_control_sensor_4: '" << image_msg->models.size() << "' objects.");
   }
 
 
@@ -76,15 +81,26 @@ void Sensors::logical_camera_callback2(
 
 void Sensors::startdetect()
 {
-  ros::Subscriber sub1 = n.subscribe("/ariac/breakbeam_0", 1, &Sensors::break_beam_callback,this);
-  ros::Subscriber sub2 = n.subscribe("/ariac/logical_camera_bins0", 1, &Sensors::logical_camera_callback,this);
-  ros::Subscriber sub3 = n.subscribe("/ariac/logical_camera_station2", 1, &Sensors::logical_camera_callback2,this);
-  ros::Subscriber sub4 = n.subscribe("/ariac/proximity_sensor_0", 1, &Sensors::proximity_sensor_callback,this);
-  ros::Subscriber sub5 = n.subscribe("/ariac/laser_profiler_0", 1, &Sensors::laser_profiler_callback,this);
-  ros::Subscriber sub6 = n.subscribe("/ariac/quality_control_sensor_1", 1, &Sensors::quality_callback1,this);
-  ros::Subscriber sub7 = n.subscribe("/ariac/quality_control_sensor_2", 1, &Sensors::quality_callback2,this);
-  ros::Subscriber sub8 = n.subscribe("/ariac/quality_control_sensor_3", 1, &Sensors::quality_callback3, this);
-  ros::Subscriber sub9 = n.subscribe("/ariac/quality_control_sensor_4", 1, &Sensors::quality_callback4, this);
+  breakbeam0_sub = n->subscribe("/ariac/breakbeam_0", 1, &Sensors::break_beam_callback,this);
+
+breakbeam0_change_sub = n->subscribe("/ariac/breakbeam_0_change", 1, &Sensors::break_beam_change_callback,this);
+
+  logical_camera_bins0_sub = n->subscribe("/ariac/logical_camera_bins0", 1, &Sensors::logical_camera_callback,this);
+
+  logical_camera_station2_sub = n->subscribe("/ariac/logical_camera_station2", 1, &Sensors::logical_camera_callback2,this);
+
+  proximity_sensor_0_sub = n->subscribe("/ariac/proximity_sensor_0", 1, &Sensors::proximity_sensor_callback,this);
+
+  laser_profiler_0_sub = n->subscribe("/ariac/laser_profiler_0", 1, &Sensors::laser_profiler_callback,this);
+
+  quality_control_sensor_1_sub = n->subscribe("/ariac/quality_control_sensor_1", 1, &Sensors::quality_callback1,this);
+
+  quality_control_sensor_2_sub = n->subscribe("/ariac/quality_control_sensor_2", 1, &Sensors::quality_callback2,this);
+
+  quality_control_sensor_3_sub = n->subscribe("/ariac/quality_control_sensor_3", 1, &Sensors::quality_callback3, this);
+
+  quality_control_sensor_4_sub = n->subscribe("/ariac/quality_control_sensor_4", 1, &Sensors::quality_callback4, this);
+
   ros::spin();
 
 }
