@@ -32,8 +32,8 @@ SOFTWARE.
 ## Dependencies and Technologies used
 
 - Programming language : C++
-- Build system : catkin_make
-- Operating System : Ubuntu 20.04
+- Build system : catkin
+- Operating System : Ubuntu 18.04
 - Packages : nist_gear, roscpp, rospy, sensor_msgs, std_msgs, std_srvs, trajectory_msgs
 
 ## Steps to Build package
