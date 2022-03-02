@@ -25,9 +25,18 @@ SOFTWARE.
 
 ## Overview
 
-## Activity Diagram
+## Architecture
+
+![Architecture Diagram](https://github.com/Sameep2808/group_3_rwa1/blob/main/docs/figures/Architecture-Diagram.png)
+
+## Sequence Diagram
+
+![Sequence Diagram-Kitting Procedure](https://github.com/Sameep2808/group_3_rwa1/blob/main/docs/figures/Sequence-Kitting.png)
+![Sequence Diagram-Assembly Procedure](https://github.com/Sameep2808/group_3_rwa1/blob/main/docs/figures/Sequence-Assembly.png)
 
 ## Class UML Diagram
+
+![Class UML Diagram](https://github.com/Sameep2808/group_3_rwa1/blob/main/docs/figures/UML_Class-Diagram.png)
 
 ## Dependencies and Technologies used
 
