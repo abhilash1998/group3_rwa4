@@ -4,7 +4,12 @@
 #include <nist_gear/AGVToAssemblyStation.h>
 
 #include <vector>
-
+/// @fn void state_callback(const std_msgs::String::ConstPtr&)
+/// @brief Get State of the AGV
+///
+/// @pre
+/// @post
+/// @param msg
 void AriacAgv::state_callback(const std_msgs::String::ConstPtr& msg)
 {
     curr_state = msg->data;
@@ -14,6 +19,13 @@ void AriacAgv::state_callback(const std_msgs::String::ConstPtr& msg)
                      << curr_state
     );
 }
+
+/// @fn void station_callback(const std_msgs::String::ConstPtr&)
+/// @brief Get updated station message for AGVs
+///
+/// @pre
+/// @post
+/// @param msg
 void AriacAgv::station_callback(const std_msgs::String::ConstPtr& msg)
 {
     curr_station = msg->data;
@@ -24,6 +36,13 @@ void AriacAgv::station_callback(const std_msgs::String::ConstPtr& msg)
     );
 }
 
+/// @fn  AriacAgv(ros::NodeHandle* const, const int)
+/// @brief AGV Class constructor
+///
+/// @pre
+/// @post
+/// @param nh
+/// @param agv_number
 AriacAgv::AriacAgv(ros::NodeHandle* const nh, const int agv_number) :
         number(agv_number)
 {
@@ -44,10 +63,24 @@ AriacAgv::AriacAgv(ros::NodeHandle* const nh, const int agv_number) :
         prefix + "/submit_shipment"
     );
 }
+
+/// @fn  ~AriacAgv()
+/// @brief AGV Class destructor
+///
+/// @pre
+/// @post
 AriacAgv::~AriacAgv()
 {
 }
 
+/// @fn bool submit_shipment(const std::string&, const std::string&)
+/// @brief Function to submit AGV shipments
+///
+/// @pre
+/// @post
+/// @param assembly_station_name
+/// @param shipment_type
+/// @return
 bool AriacAgv::submit_shipment(const std::string& assembly_station_name,
                                const std::string& shipment_type)
 {

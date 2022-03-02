@@ -9,6 +9,14 @@
 
 #define NUM_AGVS 4
 
+/// @fn int main(int, char**)
+/// @brief Main avg function to start the competition and take oreders
+///
+/// @pre
+/// @post
+/// @param argc
+/// @param argv
+/// @return
 int main(int argc, char **argv)
 {
     // Start the AGVs controller node
