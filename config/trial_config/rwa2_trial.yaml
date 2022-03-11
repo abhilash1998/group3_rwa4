@@ -20,23 +20,36 @@ time_limit: 500
 agv_infos:
   agv1:
     location: ks1
+    products:
+      part_0:
+        type: assembly_regulator_green
+        pose:
+          xyz: [0.1, 0.1, 0]
+          rpy: [0, 0, 0]
   agv2:
     location: ks2
     products:
       part_0:
-        type: assembly_battery_green
-        pose:
-          xyz: [0.1, 0.1, 0]
-          rpy: [0, 0, 0]
-      part_1:
-          type: assembly_regulator_red
+          type: assembly_regulator_green
           pose:
             xyz: [-0.1, -0.1, 0]
             rpy: [0, 0, 0]
   agv3:
     location: ks3
+    products:
+      part_0:
+          type: assembly_pump_green
+          pose:
+            xyz: [-0.1, -0.1, 0]
+            rpy: [0, 0, 0]
   agv4:
-    location: ks4    
+    location: ks4
+    products:
+      part_0:
+          type: assembly_battery_red
+          pose:
+            xyz: [-0.1, -0.1, 0]
+            rpy: [0, 0, 0]  
     
 orders:
   # Example for tasking one robot to do assembly and one robot to do kitting
@@ -77,7 +90,7 @@ orders:
             rpy: [0, 0, 0]
 
 models_over_bins:
-   bin3:
+   bin1:
      models:
        assembly_battery_blue:
          xyz_start: [0.2, 0.2, 0.0]
@@ -85,9 +98,57 @@ models_over_bins:
          rpy: [0, 0, 0]
          num_models_x: 2
          num_models_y: 2
+   bin2:
+     models:
+       assembly_battery_green:
+         xyz_start: [0.2, 0.2, 0.0]
+         xyz_end: [0.4, 0.4, 0.0]
+         rpy: [0, 0, 0]
+         num_models_x: 2
+         num_models_y: 2
+   bin3:
+     models:
+       assembly_battery_red:
+         xyz_start: [0.2, 0.2, 0.0]
+         xyz_end: [0.4, 0.4, 0.0]
+         rpy: [0, 0, 0]
+         num_models_x: 2
+         num_models_y: 2
+   bin4:
+     models:
+       assembly_sensor_blue:
+         xyz_start: [0.2, 0.2, 0.0]
+         xyz_end: [0.4, 0.4, 0.0]
+         rpy: [0, 0, 0]
+         num_models_x: 2
+         num_models_y: 2
+   bin5:
+     models:
+       assembly_sensor_blue:
+         xyz_start: [0.2, 0.2, 0.0]
+         xyz_end: [0.4, 0.4, 0.0]
+         rpy: [0, 0, 0]
+         num_models_x: 2
+         num_models_y: 2
+   bin6:
+     models:
+       assembly_sensor_green:
+         xyz_start: [0.2, 0.2, 0.0]
+         xyz_end: [0.4, 0.4, 0.0]
+         rpy: [0, 0, 0]
+         num_models_x: 2
+         num_models_y: 2
+   bin7:
+     models:
+       assembly_sensor_red:
+         xyz_start: [0.2, 0.2, 0.0]
+         xyz_end: [0.4, 0.4, 0.0]
+         rpy: [0, 0, 0]
+         num_models_x: 2
+         num_models_y: 2
    bin8:
      models:
-       assembly_battery_blue:
+       assembly_regulator_blue:
          xyz_start: [0.1, 0.2, 0.0]
          xyz_end: [0.4, 0.5, 0.0]
          rpy: [0, 0, 'pi/4']
@@ -102,14 +163,40 @@ belt_models:
         rpy: [0, 0, 0]
 
 models_over_stations:
-  as2:
+  as1:
     models:
-      assembly_battery_green:
+      assembly_battery_blue:
         xyz: [-0.032465, 0.174845, 0.15]
         rpy: [0, 0, 'pi']
-      assembly_pump_red:
+      assembly_pump_blue:
         xyz: [0.032085, -0.152835, 0.15]
         rpy: [0, 0, 0]
+
+  as2:
+    models:
+      assembly_battery_blue:
+        xyz: [-0.032465, 0.174845, 0.15]
+        rpy: [0, 0, 'pi']
+      assembly_pump_blue:
+        xyz: [0.032085, -0.152835, 0.15]
+        rpy: [0, 0, 0]
+  as3:
+    models:
+      assembly_battery_blue:
+        xyz: [-0.032465, 0.174845, 0.15]
+        rpy: [0, 0, 'pi']
+      assembly_pump_blue:
+        xyz: [0.032085, -0.152835, 0.15]
+        rpy: [0, 0, 0]
+  as4:
+    models:
+      assembly_battery_blue:
+        xyz: [-0.032465, 0.174845, 0.15]
+        rpy: [0, 0, 'pi']
+      assembly_pump_blue:
+        xyz: [0.032085, -0.152835, 0.15]
+        rpy: [0, 0, 0]
+
 
 faulty_products:
   - assembly_battery_green_2

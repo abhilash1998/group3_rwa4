@@ -6,18 +6,114 @@ sensors:
       xyz: [-2.286283, 2.963994, 1.801095]
       rpy: [3.141593, 1.570792, 0.000000]
 
+  logical_camera_bins1:
+    type: logical_camera
+    pose:
+      xyz: [-2.286283, -2.963994, 1.801095]
+      rpy: [3.141593, 1.570792, 0.000000]
 
+  logical_camera_agv1_ks1:
+    type: logical_camera
+    pose:
+      xyz: [-2.393395, 4.702724, 1.50]
+      rpy: [3.141593, 1.570792, 0.000000]
+
+  logical_camera_agv2_ks2:
+    type: logical_camera
+    pose:
+      xyz: [-2.393395, 1.361367, 1.50]
+      rpy: [3.141593, 1.570792, 0.000000]
+
+  logical_camera_agv3_ks3:
+    type: logical_camera
+    pose:
+      xyz: [-2.393395, -1.325227, 1.50]
+      rpy: [3.141593, 1.570792, 0.000000]
+
+  logical_camera_agv4_ks4:
+    type: logical_camera
+    pose:
+      xyz: [-2.393395, -4.698129, 1.50]
+      rpy: [3.141593, 1.570792, 0.000000]
+
+
+
+  logical_camera_agv1_as1:
+    type: logical_camera
+    pose:
+      xyz: [-7.3, 4.702724, 1.50]
+      rpy: [3.141593, 1.570792, 0.000000]
+
+  logical_camera_agv2_as1:
+    type: logical_camera
+    pose:
+      xyz: [-7.3, 1.361367, 1.50]
+      rpy: [3.141593, 1.570792, 0.000000]
+
+  logical_camera_agv3_as3:
+    type: logical_camera
+    pose:
+      xyz: [-7.3, -1.325227, 1.50]
+      rpy: [3.141593, 1.570792, 0.000000]
+
+  logical_camera_agv4_as3:
+    type: logical_camera
+    pose:
+      xyz: [-7.3, -4.698129, 1.50]
+      rpy: [3.141593, 1.570792, 0.000000]
+
+
+
+  logical_camera_agv1_as2:
+    type: logical_camera
+    pose:
+      xyz: [-12.26217, 4.702724, 1.50]
+      rpy: [3.141593, 1.570792, 0.000000]
+
+  logical_camera_agv2_as2:
+    type: logical_camera
+    pose:
+      xyz: [-12.26217, 1.361367, 1.50]
+      rpy: [3.141593, 1.570792, 0.000000]
+
+  logical_camera_agv3_as4:
+    type: logical_camera
+    pose:
+      xyz: [-12.26217, -1.325227, 1.50]
+      rpy: [3.141593, 1.570792, 0.000000]
+
+  logical_camera_agv4_as4:
+    type: logical_camera
+    pose:
+      xyz: [-12.26217, -4.698129, 1.50]
+      rpy: [3.141593, 1.570792, 0.000000]
+
+
+
+
+  logical_camera_station1:
+    type: logical_camera
+    pose:
+      xyz: [-7.3, 2.963994, 2.285697]
+      rpy: [3.141593, 1.570792, 0.000000]
   logical_camera_station2:
     type: logical_camera
     pose:
       xyz: [-12.26217, 2.963994, 2.285697]
       rpy: [3.141593, 1.570792, 0.000000]
-
-  depth_camera_bins1:
-    type: depth_camera
+  logical_camera_station3:
+    type: logical_camera
     pose:
-      xyz: [-2.286283, -2.963994, 1.801095]
+      xyz: [-7.3, -2.963994, 2.285697]
       rpy: [3.141593, 1.570792, 0.000000]
+  logical_camera_station4:
+    type: logical_camera
+    pose:
+      xyz: [-12.26217, -2.963994, 2.285697]
+      rpy: [3.141593, 1.570792, 0.000000]
+
+
+
 
   laser_profiler_0:
     type: laser_profiler
