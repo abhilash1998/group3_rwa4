@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(group_3_rwa1)
+project(group_3_rwa2)
 
 add_compile_options(-std=c++11)
 
