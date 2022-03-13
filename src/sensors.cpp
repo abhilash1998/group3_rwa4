@@ -146,7 +146,7 @@ void Sensors::startdetect()
 {
   breakbeam0_sub = n->subscribe("/ariac/breakbeam_0", 1, &Sensors::break_beam_callback,this);
 
-breakbeam0_change_sub = n->subscribe("/ariac/breakbeam_0_change", 1, &Sensors::break_beam_change_callback,this);
+  breakbeam0_change_sub = n->subscribe("/ariac/breakbeam_0_change", 1, &Sensors::break_beam_change_callback,this);
 
   logical_camera_bins0_sub = n->subscribe("/ariac/logical_camera_bins0", 1, &Sensors::logical_camera_callback,this);
 
