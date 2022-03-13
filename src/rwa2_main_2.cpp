@@ -136,14 +136,14 @@ int end(ros::NodeHandle* const nh)
     }
 }
 
-void world_tf()
+void world_tf(string p_type, int i, int b)
 {
     tf2_ros::Buffer tfBuffer;
     tf2_ros::TransformListener tfListener(tfBuffer);
     ros::Rate rate(10);
     ros::Duration timeout(5.0);
     geometry_msgs::TransformStamped transformStamped;
-    transformStamped = tfBuffer.lookupTransform("world", "logical_camera_bins0_assembly_pump_red_1_frame",ros::Time(0), timeout);
+    transformStamped = tfBuffer.lookupTransform("world", "logical_camera_bins"+std::to_string(b)+"_"+p_type+"_"+std::to_string(i)+"_frame",ros::Time(0), timeout);
     tf2::Quaternion q(transformStamped.transform.rotation.x,transformStamped.transform.rotation.y,transformStamped.transform.rotation.z,transformStamped.transform.rotation.w);
 
     //convert Quaternion to Euler angles
@@ -176,15 +176,15 @@ int order_av(ros::NodeHandle* const nh, int i)
     ros::Subscriber orders_sub = nh->subscribe<nist_gear::Order>("/ariac/orders",1,[&](const nist_gear::Order::ConstPtr& msg) 
     {
             order_id =  msg-> order_id;
-            // if(i==1 && order_id.compare("order_0")==0)
-            // {
-            //     new_order = false;
-            //     return 0;
-            // }
-            // else if(order_id.compare("order_1")==0)
-            // {
-            //     ROS_INFO_STREAM("High-priority order is announced");
-            // }
+            if(i==1 && order_id.compare("order_0")==0)
+            {
+                new_order = false;
+                return 0;
+            }
+            else if(order_id.compare("order_1")==0)
+            {
+                ROS_INFO_STREAM("High-priority order is announced");
+            }
             ROS_INFO_STREAM("Received order with ID '"<< order_id<< "'");
 
             assert(!msg->kitting_shipments.empty());
@@ -312,10 +312,10 @@ int main(int argc, char **argv)
     ros::NodeHandle nh;
 
     start(&nh);
-    //order_av(&nh,0);
+    order_av(&nh,0);
     while(true)
     {
-        order_av(&nh,0);
+        order_av(&nh,1);
         quality(&nh);
     }
     end(&nh);

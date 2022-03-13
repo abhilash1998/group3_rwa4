@@ -136,14 +136,14 @@ int end(ros::NodeHandle* const nh)
     }
 }
 
-void world_tf()
+void world_tf(std::string p_type, int i, int b)
 {
     tf2_ros::Buffer tfBuffer;
     tf2_ros::TransformListener tfListener(tfBuffer);
     ros::Rate rate(10);
     ros::Duration timeout(5.0);
     geometry_msgs::TransformStamped transformStamped;
-    transformStamped = tfBuffer.lookupTransform("world", "logical_camera_bins0_assembly_pump_red_1_frame",ros::Time(0), timeout);
+    transformStamped = tfBuffer.lookupTransform("world", "logical_camera_bins"+std::to_string(b)+"_"+p_type+"_"+std::to_string(i)+"_frame",ros::Time(0), timeout);
     tf2::Quaternion q(transformStamped.transform.rotation.x,transformStamped.transform.rotation.y,transformStamped.transform.rotation.z,transformStamped.transform.rotation.w);
 
     //convert Quaternion to Euler angles
@@ -201,7 +201,8 @@ int order_av(ros::NodeHandle* const nh, int i)
 
         }
     );
-
+    //if (order_id.compare(porder_id)==0)
+    
     int len = 0;
     bool found_1 = false;
     bool found_2 = false;
@@ -210,26 +211,36 @@ int order_av(ros::NodeHandle* const nh, int i)
     ros::Subscriber logical_camera_bins0_sub = nh->subscribe<nist_gear::LogicalCameraImage>("/ariac/logical_camera_bins0", 1, [&](const nist_gear::LogicalCameraImage::ConstPtr& msg)
     {
         len = msg->models.size();
+        int p1 = 0;
+        int p2 = 0;
         for(int i=0;i<len;i++)
         {
             part_detected = msg->models[i].type;
-            // ROS_INFO_STREAM(part_detected.compare(product1_type));
-            if(part_detected.compare(product1_type)==0 && !found_1)
+            if (product1_type.compare(product2_type)==0)
             {
-                ROS_INFO_STREAM("Product 1 Found: "<<part_detected);
-                world_tf();
-                found_1 = true;
-                continue;
+                if(part_detected.compare(product1_type)==0)
+                {
+                    p1=p1+1;
+                    world_tf(part_detected,p1,0);
+                    found_1 = true;
+                    if (p1>1){found_2 = true;}
+                }
             }
-            if(part_detected.compare(product2_type)==0 && !found_2)
-            {
-                ROS_INFO_STREAM("Product 2 Found: "<<part_detected);
-                world_tf();
-                found_2 = true;
-            }
-            if(found_1 && found_2)
-            {
-                break;
+            else{
+                if(part_detected.compare(product1_type)==0)
+                {
+                    //ROS_INFO_STREAM("Product 1 Found: "<<part_detected);
+                    p1=p1+1;
+                    world_tf(part_detected,p1,0);
+                    found_1 = true;
+                }
+                if(part_detected.compare(product2_type)==0)
+                {
+                    //ROS_INFO_STREAM("Product 2 Found: "<<part_detected);
+                    p2=p2+1;
+                    world_tf(part_detected,p2,0);
+                    found_2 = true;
+                }
             }
         }
 
@@ -239,26 +250,36 @@ int order_av(ros::NodeHandle* const nh, int i)
     ros::Subscriber logical_camera_bins1_sub = nh->subscribe<nist_gear::LogicalCameraImage>("/ariac/logical_camera_bins1", 1, [&](const nist_gear::LogicalCameraImage::ConstPtr& msg)
     {
         len = msg->models.size();
+        int p1 = 0;
+        int p2 = 0;
         for(int i=0;i<len;i++)
         {
             part_detected = msg->models[i].type;
-            // ROS_INFO_STREAM(part_detected.compare(product1_type));
-            if(part_detected.compare(product1_type)==0 && !found_1)
+            if (product1_type.compare(product2_type)==0)
             {
-                ROS_INFO_STREAM("Product 1 Found: "<<part_detected);
-                world_tf();
-                found_1 = true;
-                continue;
+                if(part_detected.compare(product1_type)==0)
+                {
+                    p1=p1+1;
+                    world_tf(part_detected,p1,1);
+                    found_1 = true;
+                    if (p1>1){found_2 = true;}
+                }
             }
-            if(part_detected.compare(product2_type)==0 && !found_2)
-            {
-                ROS_INFO_STREAM("Product 2 Found: "<<part_detected);
-                world_tf();
-                found_2 = true;
-            }
-            if(found_1 && found_2)
-            {
-                break;
+            else{
+                if(part_detected.compare(product1_type)==0)
+                {
+                    //ROS_INFO_STREAM("Product 1 Found: "<<part_detected);
+                    p1=p1+1;
+                    world_tf(part_detected,p1,1);
+                    found_1 = true;
+                }
+                if(part_detected.compare(product2_type)==0)
+                {
+                    //ROS_INFO_STREAM("Product 2 Found: "<<part_detected);
+                    p2=p2+1;
+                    world_tf(part_detected,p2,0);
+                    found_2 = true;
+                }
             }
         }
 
@@ -266,11 +287,13 @@ int order_av(ros::NodeHandle* const nh, int i)
     );
 
 
-    ros::Duration(20.0).sleep();
+    ros::Duration(1).sleep();
     ros::spinOnce();
     if(!new_order){return 0;}
     if(!found_1 || !found_2)
     {
+        // ros::Duration(20.0).sleep();
+        // ros::spinOnce();
         ROS_INFO_STREAM("Insufficient parts to complete "<< order_id);
     }
 
@@ -292,8 +315,25 @@ void quality(ros::NodeHandle* const nh)
             ROS_ERROR_STREAM("FOUND FAULTY PART ON AGV"<<i);
         }
     });
-    ros::Duration(1.0).sleep();
+    ros::Duration(1).sleep();
     ros::spinOnce();
+    }
+}
+
+void sensor_fail(ros::NodeHandle* const nh)
+{
+    bool state = false;
+    ros::Subscriber logical_camera_bins1_sub = nh->subscribe<nist_gear::LogicalCameraImage>("/ariac/logical_camera_bins1", 1, [&](const nist_gear::LogicalCameraImage::ConstPtr& msg)
+    {
+       state = true;
+    }
+    );
+
+    ros::Duration(1).sleep();
+    ros::spinOnce();
+    if(!state)
+    {
+        ROS_ERROR_STREAM("SENSOR BLACK OUT");
     }
 }
 
@@ -307,16 +347,18 @@ void quality(ros::NodeHandle* const nh)
 /// @return
 int main(int argc, char **argv)
 {
+    std::string porder_id;
     // Start the AGVs controller node
-    ros::init(argc, argv, "agvs_controller");
+    ros::init(argc, argv, "rwa2");
     ros::NodeHandle nh;
 
     start(&nh);
     order_av(&nh,0);
     while(true)
     {
-        order_av(&nh,1);
+        sensor_fail(&nh);
         quality(&nh);
+        if(!porder_id.compare("order_1")==0){ order_av(&nh,1);}
     }
     end(&nh);
 
