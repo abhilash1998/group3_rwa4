@@ -27,5 +27,5 @@ target_link_libraries(sensors_controller ${catkin_LIBRARIES})
 add_executable(agvs_controller src/ariac_agv.cpp src/agvs_controller.cpp)
 target_link_libraries(agvs_controller ${catkin_LIBRARIES})
 
-add_executable(rwa2_main src/ariac_agv.cpp src/sensors.cpp src/rwa2_main.cpp)
-target_link_libraries(rwa2_main ${catkin_LIBRARIES})
+add_executable(agility_controller src/agility.cpp src/agility_controller.cpp)
+target_link_libraries(agility_controller ${catkin_LIBRARIES})
