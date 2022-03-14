@@ -146,6 +146,8 @@ bool AgilityChallenger::evaluate_if_all_parts_found(const int bin_idx)
     }
 
     announced_part_frames |= did_announcement;
+    // ros::Duration(0.25).sleep();
+    // ros::spinOnce();
 
 #undef BUILD_FRAME
 

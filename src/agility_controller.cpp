@@ -13,8 +13,7 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "agility_controller");
     ros::NodeHandle nh;
 
-    // Create our node to monitor agility challenges
-    AgilityChallenger agility_challenger(&nh);
+    
 
 	ros::Duration wait_for_competition_state(0.1);
     bool competition_state_valid = false;
@@ -78,6 +77,9 @@ int main(int argc, char **argv)
             return 2;
         }
     }
+
+    // Create our node to monitor agility challenges
+    AgilityChallenger agility_challenger(&nh);
 
     // Spin indefinitely
     ros::spin();
