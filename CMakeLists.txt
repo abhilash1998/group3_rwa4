@@ -35,17 +35,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(sensors_controller src/sensors.cpp src/sensors_controller.cpp)
-add_dependencies(sensors_controller ${catkin_EXPORTED_TARGETS})
-target_link_libraries(sensors_controller ${catkin_LIBRARIES})
-
-add_executable(agvs_controller src/ariac_agv.cpp src/agvs_controller.cpp)
-target_link_libraries(agvs_controller ${catkin_LIBRARIES})
-
-add_executable(agility_controller src/agility.cpp src/agility_controller.cpp)
-target_link_libraries(agility_controller ${catkin_LIBRARIES})
-
-add_executable(arm_controller src/arm.cpp src/utils.cpp src/arm_controller.cpp)
+add_executable(arm_controller src/arm.cpp src/ariac_agv.cpp src/agility.cpp src/utils.cpp src/arm_controller.cpp)
 target_link_libraries(arm_controller ${catkin_LIBRARIES})
 
 install(DIRECTORY include

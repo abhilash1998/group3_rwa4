@@ -1,11 +1,4 @@
 <launch>
-  <node name="agility_controller"
-        pkg="group3_rwa4"
-        type="agility_controller"
-        required="true"
-        ns="group_3"
-        output="screen"
-  />
   <node name="arm_controller"
         pkg="group3_rwa4"
         type="arm_controller"
