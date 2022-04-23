@@ -5,14 +5,14 @@
            if="$(arg launch_environment)"
   />
   <node name="group_3_agvs_controller"
-        pkg="group_3_rwa1"
+        pkg="group3_rwa4"
         type="agvs_controller"
         required="true"
         ns="group_3"
         output="screen"
   />
   <node name="group_3_sensors_controller"
-        pkg="group_3_rwa1"
+        pkg="group3_rwa4"
         type="sensors_controller"
         required="true"
         ns="group_3"

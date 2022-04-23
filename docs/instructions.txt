@@ -5,7 +5,7 @@ cd ~/ariac_ws/src
 ```
 2. Copy the repository in src folder of catkin workspace
 ```
-git clone --recursive https://github.com/Sameep2808/group3_rwa2.git
+git clone --recursive https://github.com/rnvandemark/group3_rwa4.git
 cd ..
 catkin build
 ```
@@ -18,15 +18,15 @@ source ~/ariac_ws/devel/setup.bash
 
 2. Launch the package
 ```
-roslaunch group3_rwa2 ariac.launch 
+roslaunch group3_rwa4 ariac.launch
 ```
 
 3. Run the node
 ```
-rosrun group3_rwa2 agility_controller
+rosrun group3_rwa4 agility_controller
 ```
 
 4. Run the spawn script
 ```
-rosrun group3_rwa2 part_spawner.sh
+rosrun group3_rwa4 part_spawner.sh
 ```
