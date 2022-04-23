@@ -1,19 +1,7 @@
 <launch>
-  <arg name="launch_environment" default="true"/>
-  <include file="$(find nist_gear)/launch/sample_environment.launch"
-           pass_all_args="true"
-           if="$(arg launch_environment)"
-  />
-  <node name="group_3_agvs_controller"
+  <node name="agility_controller"
         pkg="group3_rwa4"
-        type="agvs_controller"
-        required="true"
-        ns="group_3"
-        output="screen"
-  />
-  <node name="group_3_sensors_controller"
-        pkg="group3_rwa4"
-        type="sensors_controller"
+        type="agility_controller"
         required="true"
         ns="group_3"
         output="screen"

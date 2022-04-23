@@ -16,14 +16,14 @@ catkin build
 source ~/ariac_ws/devel/setup.bash
 ```
 
-2. Launch the package
+2. Launch the ARIAC environment
 ```
 roslaunch group3_rwa4 ariac.launch
 ```
 
-3. Run the node
+3. Launch our custom nodes
 ```
-rosrun group3_rwa4 agility_controller
+roslaunch group3_rwa4 main.launch
 ```
 
 4. Run the spawn script
