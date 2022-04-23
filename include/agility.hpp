@@ -3,6 +3,7 @@
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
 
+#include <std_msgs/String.h>
 #include <nist_gear/Order.h>
 #include <nist_gear/LogicalCameraImage.h>
 
@@ -16,6 +17,7 @@ protected:
     tf2_ros::Buffer tf_buffer;
     tf2_ros::TransformListener tf_listener;
 
+    ros::Subscriber competition_state_sub;
     ros::Subscriber orders_subs;
     ros::Subscriber logical_camera_bins0_sub;
     ros::Subscriber logical_camera_bins1_sub;
@@ -23,6 +25,7 @@ protected:
     ros::Timer watch_for_blackouts_tmr;
     ros::Timer watch_for_order_parts_tmr;
 
+    std::string current_competition_state;
     std::string current_product0_type;
     std::string current_product1_type;
     std::array<std::vector<std::string>, 2> current_parts_found;
@@ -37,6 +40,7 @@ protected:
     bool evaluate_if_all_parts_found(const int bin_idx);
 
     void annouce_world_tf(const std::string part_name, const std::string frame);
+    void competition_state_callback(const std_msgs::String::ConstPtr& msg);
     void order_callback(const nist_gear::Order::ConstPtr& msg);
     void logical_camera_image0_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg);
     void logical_camera_image1_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg);

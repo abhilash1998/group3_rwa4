@@ -31,6 +31,15 @@ void AgilityChallenger::annouce_world_tf(const std::string part_name, const std:
             yaw);
 }
 
+void AgilityChallenger::competition_state_callback(const std_msgs::String::ConstPtr& msg)
+{
+    if (msg->data != current_competition_state)
+    {
+        current_competition_state = msg->data;
+        ROS_INFO_STREAM("Competition state updated: " << current_competition_state);
+    }
+}
+
 void AgilityChallenger::order_callback(const nist_gear::Order::ConstPtr& msg)
 {
     const std::string order_id = msg->order_id;
@@ -198,7 +207,7 @@ void AgilityChallenger::quality_control_sensor3_callback(const nist_gear::Logica
 
 void AgilityChallenger::sensor_blackout_detected_callback(const ros::TimerEvent& evt)
 {
-    if (sensors_started && !in_sensor_blackout)
+    if ((current_competition_state == "go") && sensors_started && !in_sensor_blackout)
     {
         in_sensor_blackout = true;
         ROS_ERROR_STREAM("SENSOR BLACK OUT");
@@ -220,12 +229,19 @@ void AgilityChallenger::handle_check_for_order_parts(const ros::TimerEvent& evt)
 
 AgilityChallenger::AgilityChallenger(ros::NodeHandle* const nh) :
     tf_listener(tf_buffer),
+    current_competition_state(""),
     current_product0_type(""),
     current_product1_type(""),
     sensors_started(false),
     in_sensor_blackout(false),
     announced_part_frames(false)
 {
+    competition_state_sub = nh->subscribe<std_msgs::String>(
+        "/ariac/competition_state",
+        1,
+        &AgilityChallenger::competition_state_callback,
+        this
+    );
     orders_subs = nh->subscribe<nist_gear::Order>(
         "/ariac/orders",
         1,
