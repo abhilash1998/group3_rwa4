@@ -12,13 +12,144 @@
 
 #define NUM_AGVS 4
 
+using AriacAgvMap = std::unordered_map<std::string, std::shared_ptr<AriacAgv>>;
+
+namespace {
+    std::string build_part_frame(const std::string& product_type, const int camera_index, const int counter)
+    {
+        return std::string("logical_camera_")
+            + std::to_string(camera_index)
+            + "_"
+            + product_type
+            + "_"
+            + std::to_string(counter)
+            + "_frame"
+        ;
+    }
+
+    bool does_frame_exist(const std::string& part_in_camera_frame, const double timeout)
+    {
+        bool rc = true;
+        static tf2_ros::Buffer tfBuffer;
+        static tf2_ros::TransformListener tfListener(tfBuffer);
+        try {
+            tfBuffer.lookupTransform(
+                "world",
+                part_in_camera_frame,
+                ros::Time(0),
+                ros::Duration(timeout)
+            );
+        } catch (tf2::TransformException& ex) {
+            rc = false;
+        }
+        return rc;
+    }
+
+    void cater_kitting_shipments(const AriacAgvMap& agv_map, AgilityChallenger* const agility, Arm* const arm)
+    {
+        int counter = 0;
+        // parse each kitting shipment
+        for (const auto& ks : agility->get_current_kitting_shipments())
+        {
+            counter++;
+
+            if (ks.products.empty())
+            {
+                ROS_FATAL_STREAM("Kitting shipment had no products?");
+                ros::shutdown();
+                return;
+            }
+
+            std::vector<std::pair<nist_gear::Product, std::vector<int>>> camera_for_product;
+            for (const auto& product : ks.products)
+            {
+                const std::vector<int> bin_indices = agility->get_camera_indices_of(product.type);
+                if (bin_indices.empty())
+                {
+                    ROS_FATAL_STREAM(
+                        "No matching part '"
+                        << product.type
+                        << "' found by any logical camera with contents "
+                        << agility->get_logical_camera_contents()
+                    );
+                    ros::shutdown();
+                    return;
+                }
+                else
+                {
+                    camera_for_product.push_back(std::make_pair(
+                        product,
+                        bin_indices
+                    ));
+                }
+            }
+
+            // keep track of how many products have been placed in this shipment
+            int product_placed_in_shipment = 0;
+            for (auto product_pair : camera_for_product)
+            {
+                const nist_gear::Product product = product_pair.first;
+                const std::vector<int> bin_indices = product_pair.second;
+
+                bool product_found = false;
+                for (auto bin_idx : bin_indices)
+                {
+                    const std::string part_frame = build_part_frame(product.type, bin_idx, counter);
+                    if (!does_frame_exist(part_frame, 0.5))
+                    {
+                        continue;
+                    }
+
+                    product_found = true;
+                    ROS_INFO_STREAM("Moving part '" << product.type << "' to '" << ks.agv_id << "' (" << part_frame << ")");
+                    arm->movePart(product.type, part_frame, product.pose, ks.agv_id);
+                    ROS_INFO_STREAM("Placed part '" << product.type << "' at '" << ks.agv_id << "'");
+                    product_placed_in_shipment++;
+
+                    // if we have placed all products in this shipment then ship the AGV
+                    if (product_placed_in_shipment == ks.products.size())
+                    {
+                        ros::Duration(1.0).sleep();
+                        const auto agv_iter = agv_map.find(ks.agv_id);
+                        if (agv_map.cend() != agv_iter)
+                        {
+                            const std::shared_ptr<AriacAgv> agv = agv_iter->second;
+                            if (agv->is_ready_to_deliver())
+                            {
+                                agv->submit_shipment(
+                                    ks.station_id,
+                                    ks.shipment_type
+                                );
+                            }
+                            else
+                            {
+                                ROS_ERROR_STREAM("AGV with ID " << ks.agv_id << " is not ready to ship");
+                            }
+                        }
+                        else
+                        {
+                            ROS_FATAL_STREAM("Unknown AGV with ID " << ks.agv_id);
+                            ros::shutdown();
+                            return;
+                        }
+                    }
+                }
+                if (!product_found)
+                {
+                    ROS_ERROR_STREAM("Product " << product.type << " was not found");
+                }
+            }
+        }
+    }
+}
+
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "arm_controller");
     ros::NodeHandle nh;
 
     // Create interfaces to each of the AGVs
-    std::unordered_map<std::string, std::shared_ptr<AriacAgv>> agv_map;
+    AriacAgvMap agv_map;
     for (int i = 0; i < NUM_AGVS; i++)
     {
         // AGV topics use identifiers in the range [1,NUM_AGVS], but this loop
@@ -100,6 +231,8 @@ int main(int argc, char **argv)
 
     arm.goToPresetLocation("home1");
     arm.goToPresetLocation("home2");
+
+    cater_kitting_shipments(agv_map, &agility, &arm);
 
     ros::waitForShutdown();
 

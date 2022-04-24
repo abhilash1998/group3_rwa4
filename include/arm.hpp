@@ -35,35 +35,6 @@ public:
         std::string name;
     } start, bin, agv, grasp;
 
-    /**
-    * @brief A queued part to finalize before shipping.
-    */
-    struct QueuedPartToFinalize {
-        const int type;
-        const std::string agv;
-        const geometry_msgs::Pose init_pose_in_world;
-        const geometry_msgs::Pose goal_in_tray_frame;
-        const std::string part_type;
-        const geometry_msgs::Pose part_pose_in_frame;
-
-        QueuedPartToFinalize(const std::string& agv_,
-                             const geometry_msgs::Pose& init_pose_in_world_,
-                             const geometry_msgs::Pose& goal_in_tray_frame_) :
-            type(1),
-            agv(agv_),
-            init_pose_in_world(init_pose_in_world_),
-            goal_in_tray_frame(goal_in_tray_frame_)
-        {}
-        QueuedPartToFinalize(const std::string& agv_,
-                             const std::string& part_type_,
-                             const geometry_msgs::Pose& part_pose_in_frame_) :
-            type(2),
-            agv(agv_),
-            part_type(part_type_),
-            part_pose_in_frame(part_pose_in_frame_)
-        {}
-    };
-
     Arm();
 
     /**
@@ -75,8 +46,6 @@ public:
     void movePart(std::string part_type, std::string camera_frame, geometry_msgs::Pose goal_in_tray_frame, std::string agv);
     void activateGripper();
     void deactivateGripper();
-    bool hasQueuedParts();
-    void finalizeQueuedParts();
 
     void check_part_pose(geometry_msgs::Pose target_pose_in_world,std::string agv);
 
@@ -129,13 +98,6 @@ public:
     bool quality_camera_4;
     bool quality_camera[4];
 
-    std::string get_camera_frame_of_moving_object()
-    {
-        return camera_frame_of_moving_object;
-    } 
-
-    std::string camera_frame_of_moving_object;
-
 private:
     std::vector<double> joint_group_positions_;
     std::vector<double> joint_arm_positions_;
@@ -158,31 +120,10 @@ private:
     // controller state subscribers
     ros::Subscriber arm_controller_state_subscriber_;
 
-    std::string part_type_name;
-
-    // A list of parts that are queued for finalization, and a set of names
-    // of AGV's that have a queued part on it
-    std::vector<QueuedPartToFinalize> queued_parts;
-
-    int *get_counter()
-    {
-        return counter;
-    }
-    std::string get_part_type_name()
-    {
-        return part_type_name;
-    }
-
     // callbacks
     void gripper_state_callback(const nist_gear::VacuumGripperState::ConstPtr& gripper_state_msg);
     void arm_joint_states_callback_(const sensor_msgs::JointState::ConstPtr& joint_state_msg);
     void arm_controller_state_callback(const control_msgs::JointTrajectoryControllerState::ConstPtr& msg);
-
-    void finalizePlacedPart(const std::string& agv,
-                            const std::string& part_type,
-                            const geometry_msgs::Pose& part_pose_in_frame);
-
-    void check_faulty_part(std::string part_type,geometry_msgs::Pose part_pose_in_frame,std::string agv);
 
     ros::Subscriber Arm_quality_control_sensor_1_subscriber;
     /*!< subscriber to the topic /ariac/quality_control_sensor_2 */

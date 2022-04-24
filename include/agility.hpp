@@ -18,13 +18,12 @@ protected:
     tf2_ros::TransformListener tf_listener;
 
     ros::Subscriber orders_subs;
-    ros::Subscriber logical_camera_1_sub;
-    ros::Subscriber logical_camera_2_sub;
     ros::Subscriber blackout_sub;
+    std::array<ros::Subscriber, 4> logical_camera_subs;
     std::array<ros::Subscriber, 4> quality_control_sensor_subs;
 
     std::vector<nist_gear::KittingShipment> current_kitting_shipments;
-    std::array<std::vector<std::string>, 2> current_parts_found;
+    std::array<std::vector<std::string>, 4> current_logical_camera_data;
     bool in_sensor_blackout;
 
     void help_logical_camera_image_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg, const int bin_idx);
@@ -35,6 +34,8 @@ protected:
     void blackout_status_callback(const std_msgs::Bool::ConstPtr& msg);
     void logical_camera_image1_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg);
     void logical_camera_image2_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg);
+    void logical_camera_image3_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg);
+    void logical_camera_image4_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg);
     void quality_control_sensor1_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg);
     void quality_control_sensor2_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg);
     void quality_control_sensor3_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg);
@@ -43,4 +44,8 @@ protected:
 public:
     AgilityChallenger(ros::NodeHandle* const nh);
     ~AgilityChallenger();
+
+    std::vector<nist_gear::KittingShipment> get_current_kitting_shipments() const;
+    std::vector<int> get_camera_indices_of(const std::string& product_type) const;
+    std::string get_logical_camera_contents() const;
 };

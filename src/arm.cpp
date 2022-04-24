@@ -162,57 +162,11 @@ void Arm::moveBaseTo(double linear_arm_actuator_joint_position)
 void Arm::movePart(std::string part_type, std::string camera_frame, geometry_msgs::Pose goal_in_tray_frame, std::string agv)
 {
     //convert goal_in_tray_frame into world frame
-
     auto init_pose_in_world = utils::transformToWorldFrame(camera_frame);
-    camera_frame_of_moving_object=camera_frame;
     // ROS_INFO_STREAM(init_pose_in_world.position.x << " " << init_pose_in_world.position.y);
-    part_type_name=part_type;
-
     auto target_pose_in_world = utils::transformToWorldFrame(goal_in_tray_frame, agv);
     if (pickPart(part_type, init_pose_in_world)) {
-        // ROS_INFO_STREAM("camera_frame ,"<<camera_frame);
-//        if (blackout_active && *blackout_active)
-//        {
-//            queued_parts.push_back(QueuedPartToFinalize(
-//                agv,
-//                init_pose_in_world,
-//                goal_in_tray_frame
-//            ));
-//        }
-//        else
-//        {
-            placePart(init_pose_in_world, goal_in_tray_frame, agv/*, blackout_active*/); /// Changed function.
-//            // auto final_pose_in_world = utils::transformToWorldFrame(camera_frame);
-//            // check_part_pose(final_pose_in_world,goal_in_tray_frame,agv);
-//        }
-    }
-}
-
-bool Arm::hasQueuedParts()
-{
-    return !queued_parts.empty();
-}
-
-void Arm::finalizeQueuedParts()
-{
-    while (!queued_parts.empty())
-    {
-        const QueuedPartToFinalize part = *(queued_parts.end());
-        if (1 == part.type)
-        {
-            placePart(
-                part.init_pose_in_world,
-                part.goal_in_tray_frame,
-                part.agv
-            );
-        }
-        else
-        {
-            check_part_pose(part.part_pose_in_frame, part.agv);
-            check_faulty_part(part.part_type, part.part_pose_in_frame, part.agv);
-            //goToPresetLocation("home2");
-        }
-        queued_parts.pop_back();
+        placePart(init_pose_in_world, goal_in_tray_frame, agv);
     }
 }
 
@@ -424,165 +378,10 @@ bool Arm::placePart(geometry_msgs::Pose part_init_pose, geometry_msgs::Pose part
     deactivateGripper();
     goToPresetLocation(agv);
     arm_group_.setMaxVelocityScalingFactor(1.0);
-    auto part_type=get_part_type_name();
-
-    // auto final_pose_in_world = utils::transformToWorldFrame(camera_frame);
-    ros::Duration(0.5).sleep();
-
-//    if (blackout_active && *blackout_active)
-//    {
-//        queued_parts.push_back(QueuedPartToFinalize(
-//            agv,
-//            part_type,
-//            part_pose_in_frame
-//        ));
-//    }
-//    else
-//    {
-        check_part_pose(part_pose_in_frame, agv);
-        check_faulty_part(part_type, part_pose_in_frame, agv);
-//        //goToPresetLocation("home2");
-//    }
 
     return true;
-    // TODO: check the part was actually placed in the correct pose in the agv
-    // and that it is not faulty
 }
 
-void Arm::check_faulty_part(std::string part_type,geometry_msgs::Pose part_pose_in_frame,std::string agv)
-{
-    auto target_pose_in_world = utils::transformToWorldFrame(
-        part_pose_in_frame,
-        agv);
-    bool faulty=false;
-
-    if (agv == "agv1"){
-        faulty = get_quality_camera1_data();
-    }
-    else if (agv=="agv2"){
-        faulty = get_quality_camera2_data();
-    }
-    if (agv == "agv3"){
-        faulty = get_quality_camera3_data();
-    }
-    else if (agv=="agv4"){
-        faulty = get_quality_camera4_data();
-    }
-
-    // ros::shutdown();
-    if (faulty){
-        ROS_ERROR_STREAM("Checking for faulty stream");
-        goToPresetLocation(agv);
-        if (pickPart(part_type, target_pose_in_world)) {
-            goToPresetLocation("home2");
-            ros::Duration(10.0).sleep();
-            deactivateGripper();
-            std::string camera_frame=get_camera_frame_of_moving_object();
-            int _count=1;
-            std::string camera_name="";
-            // std::string part_type="";
-            for(auto i:camera_frame){
-                // if (_count>=4){
-                //     // part_type=part_type+i;
-                // }
-                if (i=='_'){
-                    if(_count==6){
-                        break;
-                    }
-                    _count=_count+1;}
-                camera_name=camera_name+i;
-            }
-
-            int* counter_pointer=get_counter();
-            *counter_pointer=*counter_pointer+1;
-
-            // ros::shutdown();
-            camera_name=camera_name+"_"+std::to_string(*counter_pointer)+"_frame";
-            //part_type=part_type+std::to_string(*counter_pointer);
-
-            // ROS_ERROR_STREAM("counter_pointer " <<part_type);
-            movePart(part_type, camera_name, part_pose_in_frame, agv/*, 0*/);
-        // movePart(std::string part_type, std::string camera_frame, geometry_msgs::Pose goal_in_tray_frame, std::string agv)
-        }
-    }
-    // auto target_pose_in_world = utils::transformToWorldFrame(
-    //     part_pose_in_frame,
-    //     agv);
-
-}
-
-void Arm::check_part_pose(geometry_msgs::Pose part_pose_in_frame,std::string agv)
-{
-    auto target_pose_in_world = utils::transformToWorldFrame(
-        part_pose_in_frame,
-        agv);
-    geometry_msgs::Pose final_pose_in_world;
-    std::string camera_frame;
-    std::string part_type_name=get_part_type_name();
-
-    if (agv =="agv1"){
-        camera_frame ="logical_camera_1_"+part_type_name+"_"+std::to_string(*counter)+"_frame";
-        ROS_INFO_STREAM("Checking logical camera 1 ");
-    }
-    else if (agv=="agv2"){
-        camera_frame="logical_camera_4_"+part_type_name+"_"+std::to_string(*counter)+"_frame";
-        ROS_INFO_STREAM("Checking logical camera 2");
-    }
-    else if (agv=="agv3"){
-        camera_frame="logical_camera_3_"+part_type_name+"_"+std::to_string(*counter)+"_frame";
-        ROS_INFO_STREAM("Checking logical camera 2");
-    }
-    else if (agv=="agv4"){
-        camera_frame="logical_camera_2_"+part_type_name+"_"+std::to_string(*counter)+"_frame";
-        ROS_INFO_STREAM("Checking logical camera 2");
-    }
-
-// logical_camera_1_assembly_pump_red_1_frame
-    // final_pose_in_world=
-    final_pose_in_world = utils::transformToWorldFrame(camera_frame);
-    ROS_INFO_STREAM("final_pose_in_world "<<final_pose_in_world);
-    // auto target_pose_in_world=utils::transformToWorldFrame(goal_in_tray_frame,agv);
-    // if (abs(final_pose_in_world.position.x-target_pose_in_world.position.x)<0.3&& (abs(final_pose_in_world.position.y-target_pose_in_world.position.y)<0.3) ){
-    //     if  ((abs(final_pose_in_world.orientation.x-target_pose_in_world.orientation.x)<1)&&(abs(final_pose_in_world.orientation.y-target_pose_in_world.orientation.y)<1)&& (abs(final_pose_in_world.orientation.z-target_pose_in_world.orientation.z)<1)){
-
-    //         ROS_INFO_STREAM("Part placed right");
-    //     }
-    if (true)
-    {
-        if  (true)
-        {
-            ROS_INFO_STREAM("Part placed right");
-        }
-        else
-        {
-            ROS_INFO_STREAM("Part placed changing");
-            if (pickPart(part_type_name, final_pose_in_world))
-            {
-                // ROS_INFO_STREAM("camera_frame ,"<<camera_frame);
-                // auto final_pose_in_world = utils::transformToWorldFrame(camera_frame);
-                placePart(final_pose_in_world, part_pose_in_frame, agv); /// Changed function.
-                // 
-                // check_part_pose(final_pose_in_world,goal_in_tray_frame,agv);
-            }
-        // placePart(final_pose_in_world,part_pose_in_frame,agv);
-        }
-    }
-    else
-    {
-        ROS_INFO_STREAM("Part placed changing");
-        ROS_INFO_STREAM(final_pose_in_world<<" goal in tray "<< target_pose_in_world <<" final pose");
-
-        if (pickPart(part_type_name, final_pose_in_world))
-        {
-            // ROS_INFO_STREAM("camera_frame ,"<<camera_frame);
-            // auto final_pose_in_world = utils::transformToWorldFrame(camera_frame);
-            placePart(final_pose_in_world, part_pose_in_frame, agv); /// Changed function.
-            // 
-            // check_part_pose(final_pose_in_world,goal_in_tray_frame,agv);
-        }
-        // placePart(final_pose_in_world,part_pose_in_frame,agv);
-    }
-}
 /////////////////////////////////////////////////////
 void Arm::gripper_state_callback(const nist_gear::VacuumGripperState::ConstPtr& gripper_state_msg)
 {

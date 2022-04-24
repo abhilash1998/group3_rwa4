@@ -2,6 +2,9 @@
 
 #include <ros/node_handle.h>
 
+#include <algorithm>
+#include <numeric>
+
 void AgilityChallenger::order_callback(const nist_gear::Order::ConstPtr& msg)
 {
     const std::string order_id = msg->order_id;
@@ -27,7 +30,7 @@ void AgilityChallenger::help_logical_camera_image_callback(const nist_gear::Logi
     // Clear the list of parts that this camera currently sees, and repopulate
     // it with updated data
     // Notice the vector is a reference
-    std::vector<std::string>& current_parts_bin_idx = current_parts_found[bin_idx];
+    std::vector<std::string>& current_parts_bin_idx = current_logical_camera_data[bin_idx];
     current_parts_bin_idx.clear();
     for (auto iter_model = msg->models.begin(); iter_model != msg->models.end(); ++iter_model)
     {
@@ -53,6 +56,18 @@ void AgilityChallenger::logical_camera_image2_callback(const nist_gear::LogicalC
 {
     // Callback for bin #2 with index 1
     help_logical_camera_image_callback(msg, 1);
+}
+
+void AgilityChallenger::logical_camera_image3_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg)
+{
+    // Callback for bin #3 with index 2
+    help_logical_camera_image_callback(msg, 2);
+}
+
+void AgilityChallenger::logical_camera_image4_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg)
+{
+    // Callback for bin #4 with index 3
+    help_logical_camera_image_callback(msg, 3);
 }
 
 void AgilityChallenger::quality_control_sensor1_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg)
@@ -95,16 +110,28 @@ AgilityChallenger::AgilityChallenger(ros::NodeHandle* const nh) :
         &AgilityChallenger::blackout_status_callback,
         this
     );
-    logical_camera_1_sub = nh->subscribe<nist_gear::LogicalCameraImage>(
+    logical_camera_subs[0] = nh->subscribe<nist_gear::LogicalCameraImage>(
         "/ariac/logical_camera_1",
         1,
         &AgilityChallenger::logical_camera_image1_callback,
         this
     );
-    logical_camera_2_sub = nh->subscribe<nist_gear::LogicalCameraImage>(
+    logical_camera_subs[1] = nh->subscribe<nist_gear::LogicalCameraImage>(
         "/ariac/logical_camera_2",
         1,
         &AgilityChallenger::logical_camera_image2_callback,
+        this
+    );
+    logical_camera_subs[2] = nh->subscribe<nist_gear::LogicalCameraImage>(
+        "/ariac/logical_camera_3",
+        1,
+        &AgilityChallenger::logical_camera_image3_callback,
+        this
+    );
+    logical_camera_subs[3] = nh->subscribe<nist_gear::LogicalCameraImage>(
+        "/ariac/logical_camera_4",
+        1,
+        &AgilityChallenger::logical_camera_image4_callback,
         this
     );
     quality_control_sensor_subs[0] = nh->subscribe<nist_gear::LogicalCameraImage>(
@@ -135,4 +162,49 @@ AgilityChallenger::AgilityChallenger(ros::NodeHandle* const nh) :
 
 AgilityChallenger::~AgilityChallenger()
 {
+}
+
+std::vector<nist_gear::KittingShipment> AgilityChallenger::get_current_kitting_shipments() const
+{
+    return current_kitting_shipments;
+}
+
+std::vector<int> AgilityChallenger::get_camera_indices_of(const std::string& product_type) const
+{
+    std::vector<int> indices;
+    for (int i = 0; i < current_logical_camera_data.size(); i++)
+    {
+        const std::vector<std::string>& lcd = current_logical_camera_data[i];
+        if (lcd.cend() != std::find(lcd.cbegin(), lcd.cend(), product_type))
+        {
+            indices.push_back(i+1);
+        }
+    }
+    return indices;
+}
+
+std::string AgilityChallenger::get_logical_camera_contents() const
+{
+    std::string str = "{";
+    for (int i = 0; i < current_logical_camera_data.size(); i++)
+    {
+        if (i != 0)
+        {
+            str += ", ";
+        }
+
+        const std::vector<std::string>& lcd = current_logical_camera_data[i];
+        str += (std::to_string(i+1) + ": [");
+        if (!lcd.empty())
+        {
+            str += std::accumulate(
+                std::next(lcd.begin()),
+                lcd.end(),
+                lcd[0],
+                [](const std::string& a, const std::string& b) { return std::move(a) + ',' + b; }
+            );
+        }
+        str += "]";
+    }
+    return str;
 }
