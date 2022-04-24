@@ -11,7 +11,22 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   std_srvs
   trajectory_msgs
+  eigen_conversions
+  control_msgs
+  geometry_msgs
+  moveit_msgs
+  rosgraph_msgs
+  tf2
+  tf2_eigen
+  tf2_geometry_msgs
+  tf2_ros
+  moveit_core
+  moveit_ros_perception
+  moveit_ros_planning
+  moveit_ros_planning_interface
+  moveit_visual_tools
 )
+find_package(Eigen3 REQUIRED)
 
 catkin_package()
 
@@ -29,3 +44,15 @@ target_link_libraries(agvs_controller ${catkin_LIBRARIES})
 
 add_executable(agility_controller src/agility.cpp src/agility_controller.cpp)
 target_link_libraries(agility_controller ${catkin_LIBRARIES})
+
+add_executable(arm_controller src/arm.cpp src/utils.cpp src/arm_controller.cpp)
+target_link_libraries(arm_controller ${catkin_LIBRARIES})
+
+install(DIRECTORY include
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+)
+
+install(FILES
+  config/robot_workcell_specs.yaml
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
