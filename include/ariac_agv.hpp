@@ -13,6 +13,7 @@ class AriacAgv
 {
 protected:
     const int number;
+    const std::string id;
 
     ros::Subscriber state_sub;
     ros::Subscriber station_sub;
@@ -27,6 +28,9 @@ protected:
 public:
     AriacAgv(ros::NodeHandle* const nh, const int agv_number);
     ~AriacAgv();
+
+    std::string get_id() const;
+    bool is_ready_to_deliver() const;
 
     bool submit_shipment(const std::string& assembly_station_name,
                          const std::string& shipment_type);

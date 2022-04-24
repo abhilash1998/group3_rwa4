@@ -44,9 +44,10 @@ void AriacAgv::station_callback(const std_msgs::String::ConstPtr& msg)
 /// @param nh
 /// @param agv_number
 AriacAgv::AriacAgv(ros::NodeHandle* const nh, const int agv_number) :
-        number(agv_number)
+        number(agv_number),
+        id(std::string("agv") + std::to_string(number))
 {
-    const std::string prefix = std::string("/ariac/agv") + std::to_string(number);
+    const std::string prefix = std::string("/ariac/") + id;
     state_sub = nh->subscribe(
         prefix + "/state",
         1,
@@ -71,6 +72,16 @@ AriacAgv::AriacAgv(ros::NodeHandle* const nh, const int agv_number) :
 /// @post
 AriacAgv::~AriacAgv()
 {
+}
+
+std::string AriacAgv::get_id() const
+{
+    return id;
+}
+
+bool AriacAgv::is_ready_to_deliver() const
+{
+    return 0 == curr_state.compare("ready_to_deliver");
 }
 
 /// @fn bool submit_shipment(const std::string&, const std::string&)
