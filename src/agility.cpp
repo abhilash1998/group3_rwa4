@@ -62,39 +62,39 @@ void AgilityChallenger::help_quality_control_sensor_callback(const nist_gear::Lo
     }
 }
 
-void AgilityChallenger::logical_camera_image0_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg)
+void AgilityChallenger::logical_camera_image1_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg)
 {
-    // Callback for bin #0
+    // Callback for bin #1 with index 0
     help_logical_camera_image_callback(msg, 0);
 }
 
-void AgilityChallenger::logical_camera_image1_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg)
+void AgilityChallenger::logical_camera_image2_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg)
 {
-    // Callback for bin #1
+    // Callback for bin #2 with index 1
     help_logical_camera_image_callback(msg, 1);
-}
-
-void AgilityChallenger::quality_control_sensor0_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg)
-{
-    // Callback for agv #0
-    help_quality_control_sensor_callback(msg, 0);
 }
 
 void AgilityChallenger::quality_control_sensor1_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg)
 {
-    // Callback for agv #1
-    help_quality_control_sensor_callback(msg, 1);
+    // Callback for agv #1 with index 0
+    help_quality_control_sensor_callback(msg, 0);
 }
 
 void AgilityChallenger::quality_control_sensor2_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg)
 {
-    // Callback for agv #2
-    help_quality_control_sensor_callback(msg, 2);
+    // Callback for agv #2 with index 1
+    help_quality_control_sensor_callback(msg, 1);
 }
 
 void AgilityChallenger::quality_control_sensor3_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg)
 {
-    // Callback for agv #3
+    // Callback for agv #3 with index 2
+    help_quality_control_sensor_callback(msg, 2);
+}
+
+void AgilityChallenger::quality_control_sensor4_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg)
+{
+    // Callback for agv #4 with index 3
     help_quality_control_sensor_callback(msg, 3);
 }
 
@@ -125,40 +125,40 @@ AgilityChallenger::AgilityChallenger(ros::NodeHandle* const nh) :
         &AgilityChallenger::order_callback,
         this
     );
-    logical_camera_bins0_sub = nh->subscribe<nist_gear::LogicalCameraImage>(
-        "/ariac/logical_camera_bins0",
-        1,
-        &AgilityChallenger::logical_camera_image0_callback,
-        this
-    );
-    logical_camera_bins1_sub = nh->subscribe<nist_gear::LogicalCameraImage>(
-        "/ariac/logical_camera_bins1",
+    logical_camera_1_sub = nh->subscribe<nist_gear::LogicalCameraImage>(
+        "/ariac/logical_camera_1",
         1,
         &AgilityChallenger::logical_camera_image1_callback,
         this
     );
-    quality_control_sensor_subs[0] = nh->subscribe<nist_gear::LogicalCameraImage>(
-        "/ariac/quality_control_sensor_0",
+    logical_camera_2_sub = nh->subscribe<nist_gear::LogicalCameraImage>(
+        "/ariac/logical_camera_2",
         1,
-        &AgilityChallenger::quality_control_sensor0_callback,
+        &AgilityChallenger::logical_camera_image2_callback,
         this
     );
-    quality_control_sensor_subs[1] = nh->subscribe<nist_gear::LogicalCameraImage>(
+    quality_control_sensor_subs[0] = nh->subscribe<nist_gear::LogicalCameraImage>(
         "/ariac/quality_control_sensor_1",
         1,
         &AgilityChallenger::quality_control_sensor1_callback,
         this
     );
-    quality_control_sensor_subs[2] = nh->subscribe<nist_gear::LogicalCameraImage>(
+    quality_control_sensor_subs[1] = nh->subscribe<nist_gear::LogicalCameraImage>(
         "/ariac/quality_control_sensor_2",
         1,
         &AgilityChallenger::quality_control_sensor2_callback,
         this
     );
-    quality_control_sensor_subs[3] = nh->subscribe<nist_gear::LogicalCameraImage>(
+    quality_control_sensor_subs[2] = nh->subscribe<nist_gear::LogicalCameraImage>(
         "/ariac/quality_control_sensor_3",
         1,
         &AgilityChallenger::quality_control_sensor3_callback,
+        this
+    );
+    quality_control_sensor_subs[3] = nh->subscribe<nist_gear::LogicalCameraImage>(
+        "/ariac/quality_control_sensor_4",
+        1,
+        &AgilityChallenger::quality_control_sensor4_callback,
         this
     );
     watch_for_blackouts_tmr = nh->createTimer(

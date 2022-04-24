@@ -19,8 +19,8 @@ protected:
 
     ros::Subscriber competition_state_sub;
     ros::Subscriber orders_subs;
-    ros::Subscriber logical_camera_bins0_sub;
-    ros::Subscriber logical_camera_bins1_sub;
+    ros::Subscriber logical_camera_1_sub;
+    ros::Subscriber logical_camera_2_sub;
     std::array<ros::Subscriber, 4> quality_control_sensor_subs;
     ros::Timer watch_for_blackouts_tmr;
 
@@ -36,12 +36,12 @@ protected:
     void annouce_world_tf(const std::string part_name, const std::string frame);
     void competition_state_callback(const std_msgs::String::ConstPtr& msg);
     void order_callback(const nist_gear::Order::ConstPtr& msg);
-    void logical_camera_image0_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg);
     void logical_camera_image1_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg);
-    void quality_control_sensor0_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg);
+    void logical_camera_image2_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg);
     void quality_control_sensor1_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg);
     void quality_control_sensor2_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg);
     void quality_control_sensor3_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg);
+    void quality_control_sensor4_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg);
     void sensor_blackout_detected_callback(const ros::TimerEvent& evt);
 
 public:
