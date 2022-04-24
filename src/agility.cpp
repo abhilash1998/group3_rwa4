@@ -1,16 +1,6 @@
 #include "agility.hpp"
 
 #include <ros/node_handle.h>
-#include <ros/duration.h>
-
-void AgilityChallenger::competition_state_callback(const std_msgs::String::ConstPtr& msg)
-{
-    if (msg->data != current_competition_state)
-    {
-        current_competition_state = msg->data;
-        ROS_INFO_STREAM("Competition state updated: " << current_competition_state);
-    }
-}
 
 void AgilityChallenger::order_callback(const nist_gear::Order::ConstPtr& msg)
 {
@@ -26,19 +16,14 @@ void AgilityChallenger::order_callback(const nist_gear::Order::ConstPtr& msg)
     current_kitting_shipments = msg->kitting_shipments;
 }
 
+void AgilityChallenger::blackout_status_callback(const std_msgs::Bool::ConstPtr& msg)
+{
+    in_sensor_blackout = msg->data;
+    ROS_INFO_STREAM("Blackout status updated: " << std::to_string(in_sensor_blackout));
+}
+
 void AgilityChallenger::help_logical_camera_image_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg, const int bin_idx)
 {
-    // First, we received sensor data, so we are not in a sensor blackout. We
-    // stop the timer, and then at the end of the function, we restart it so we
-    // can continue to monitor for blackouts. If a sensor blackout never
-    // occurs, then that means this callback is called often enough that the
-    // timer never fires. Also, 'sensors_started' is used only to indicate that
-    // one or more callbacks to this function have been received. This deals
-    // with the time delay that comes with creating a pub/sub connection.
-    sensors_started = true;
-    in_sensor_blackout = false;
-    watch_for_blackouts_tmr.stop();
-
     // Clear the list of parts that this camera currently sees, and repopulate
     // it with updated data
     // Notice the vector is a reference
@@ -48,10 +33,6 @@ void AgilityChallenger::help_logical_camera_image_callback(const nist_gear::Logi
     {
         current_parts_bin_idx.push_back(iter_model->type);
     }
-
-    // As mentioned above, we restart the timer here to continue monitoring for
-    // sensor blackouts
-    watch_for_blackouts_tmr.start();
 }
 
 void AgilityChallenger::help_quality_control_sensor_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg, const int agv_idx)
@@ -98,31 +79,20 @@ void AgilityChallenger::quality_control_sensor4_callback(const nist_gear::Logica
     help_quality_control_sensor_callback(msg, 3);
 }
 
-void AgilityChallenger::sensor_blackout_detected_callback(const ros::TimerEvent& evt)
-{
-    if ((current_competition_state == "go") && sensors_started && !in_sensor_blackout)
-    {
-        in_sensor_blackout = true;
-        ROS_ERROR_STREAM("SENSOR BLACK OUT");
-    }
-}
-
 AgilityChallenger::AgilityChallenger(ros::NodeHandle* const nh) :
     tf_listener(tf_buffer),
-    current_competition_state(""),
-    sensors_started(false),
     in_sensor_blackout(false)
 {
-    competition_state_sub = nh->subscribe<std_msgs::String>(
-        "/ariac/competition_state",
-        1,
-        &AgilityChallenger::competition_state_callback,
-        this
-    );
     orders_subs = nh->subscribe<nist_gear::Order>(
         "/ariac/orders",
         1,
         &AgilityChallenger::order_callback,
+        this
+    );
+    blackout_sub = nh->subscribe<std_msgs::Bool>(
+        "/group3/in_sensor_blackout",
+        1,
+        &AgilityChallenger::blackout_status_callback,
         this
     );
     logical_camera_1_sub = nh->subscribe<nist_gear::LogicalCameraImage>(
@@ -159,11 +129,6 @@ AgilityChallenger::AgilityChallenger(ros::NodeHandle* const nh) :
         "/ariac/quality_control_sensor_4",
         1,
         &AgilityChallenger::quality_control_sensor4_callback,
-        this
-    );
-    watch_for_blackouts_tmr = nh->createTimer(
-        ros::Duration(1.0),
-        &AgilityChallenger::sensor_blackout_detected_callback,
         this
     );
 }
