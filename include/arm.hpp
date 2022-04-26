@@ -65,7 +65,7 @@ public:
     bool sendJointPosition(trajectory_msgs::JointTrajectory command_msg);
     void goToPresetLocation(std::string location_name);
 
-    // 
+    // Use this robot's tf buffer to resolve an AGV in the world frame
     geometry_msgs::Pose transform_to_world_frame(const geometry_msgs::Pose& target, const std::string& agv_id);
 
     //--preset locations;

@@ -15,6 +15,10 @@
 class AgilityChallenger
 {
 protected:
+    // A tuple that describes a part that has been placed but needs quality
+    // control checking. First param is the product that was placed, second arg
+    // is the order ID it is a part of, third arg is the objective pose for the
+    // part in world frame.
     using PartForFaultVerification = std::tuple<nist_gear::Product, std::string, geometry_msgs::Pose>;
 
     ros::Subscriber orders_subs;
@@ -36,7 +40,8 @@ protected:
     // True if a sensor blackout was detected right now, false otherwise
     bool in_sensor_blackout;
 
-    // 
+    // A map that relates an AGV ID (which itself corresponds to an logical
+    // camera index) to a list of parts that are pending fault verification.
     std::unordered_map<std::string, std::vector<PartForFaultVerification>> parts_for_fault_verification;
 
     // The most recently heard quality control updates heard from QC cameras
@@ -67,13 +72,21 @@ public:
     // active, false otherwise).
     bool is_sensor_blackout_active() const;
 
-    // 
+    // Queue a part for fault verification. Uses the given values to create an
+    // instance of PartForFaultVerification in \a parts_for_fault_verification.
+    // @param product The product that needs verification
+    // @param order_id The ID of the order this part is associated with
+    // @param agv_id The ID of the AGV this part was placed on
+    // @param objective_pose_in_world The objective pose of this product that
+    // was placed, in world frame
     void queue_for_fault_verification(const nist_gear::Product& product,
                                       const std::string& order_id,
                                       const std::string& agv_id,
                                       const geometry_msgs::Pose& objective_pose_in_world);
 
-    // 
+    // Check if any parts of the given AGV still need verification
+    // @param agv_id The ID of the AGV
+    // @return True if there are parts pending verification, false otherwise
     bool needs_fault_verification(const std::string& agv_id);
 
     // Pass ownership of \a pending_order off to the caller of this method if
@@ -95,6 +108,10 @@ public:
     std::string get_logical_camera_contents() const;
 
     // If there are any faulty parts, get the pick pose for one of them.
+    // @param agv_id If this method returns true, then this value is
+    // overwritten with the ID of the AGV that this part is placed on
+    // @param product If this method returns true, then this value is
+    // overwritten with the product that requires this type of part
     // @param pick_frame If this method returns true, then this value is
     // overwritten with the pose of a faulty part resolved in world frame,
     // if false then this value is not overwritten
