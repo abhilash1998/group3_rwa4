@@ -4,6 +4,7 @@
 #include <std_msgs/Bool.h>
 #include <nist_gear/Order.h>
 #include <nist_gear/LogicalCameraImage.h>
+#include <nist_gear/Product.h>
 
 #include <string>
 #include <array>
@@ -13,7 +14,7 @@
 class AgilityChallenger
 {
 protected:
-    using PartForFaultVerification = std::pair<std::string, geometry_msgs::Pose>;
+    using PartForFaultVerification = std::pair<nist_gear::Product, geometry_msgs::Pose>;
 
     ros::Subscriber orders_subs;
     ros::Subscriber blackout_sub;
@@ -67,7 +68,7 @@ public:
 
     // 
     void queue_for_fault_verification(const std::string& agv_id,
-                                      const std::string& product_type,
+                                      const nist_gear::Product& product,
                                       const geometry_msgs::Pose& objective_pose_in_world);
 
     // 
@@ -97,6 +98,6 @@ public:
     // if false then this value is not overwritten
     // @return True if there is a faulty part, false otherwise.
     bool get_agv_faulty_part(std::string& agv_id,
-                             std::string& product_type,
+                             nist_gear::Product& product,
                              geometry_msgs::Pose& pick_frame) const;
 };

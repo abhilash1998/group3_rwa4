@@ -235,16 +235,16 @@ bool AgilityChallenger::is_sensor_blackout_active() const
 }
 
 void AgilityChallenger::queue_for_fault_verification(const std::string& agv_id,
-                                                     const std::string& product_type,
+                                                     const nist_gear::Product& product,
                                                      const geometry_msgs::Pose& objective_pose_in_world)
 {
     ROS_INFO_STREAM("Queueing part for fault verification: "
                     << agv_id
                     << ", "
-                    << product_type
+                    << product.type
                     << ", "
                     << objective_pose_in_world);
-    parts_for_fault_verification[agv_id].push_back(std::make_pair(product_type, objective_pose_in_world));
+    parts_for_fault_verification[agv_id].push_back(std::make_pair(product, objective_pose_in_world));
 }
 
 bool AgilityChallenger::needs_fault_verification(const std::string& agv_id)
@@ -311,7 +311,7 @@ std::string AgilityChallenger::get_logical_camera_contents() const
 }
 
 bool AgilityChallenger::get_agv_faulty_part(std::string& agv_id,
-                                            std::string& product_type,
+                                            nist_gear::Product& product,
                                             geometry_msgs::Pose& pick_frame) const
 {
     for (auto iter = parts_for_fault_verification.cbegin(); iter != parts_for_fault_verification.cend(); ++iter)
@@ -320,7 +320,7 @@ bool AgilityChallenger::get_agv_faulty_part(std::string& agv_id,
         if (!iter_parts.empty())
         {
             agv_id = iter->first;
-            std::tie(product_type, pick_frame) = iter_parts.front();
+            std::tie(product, pick_frame) = iter_parts.front();
             return true;
         }
     }

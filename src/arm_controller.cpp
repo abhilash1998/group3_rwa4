@@ -71,16 +71,23 @@ namespace {
         // parse each kitting shipment
         for (const auto& ks : kitting_shipments)
         {
-            if (ks.products.empty())
+            std::vector<nist_gear::Product> products = ks.products;
+            if (products.empty())
             {
                 ROS_FATAL_STREAM("Kitting shipment had no products?");
                 ros::shutdown();
                 return;
             }
 
-            std::vector<std::pair<nist_gear::Product, std::vector<int>>> product_location_pairs;
-            for (const auto& product : ks.products)
+            // loop through each product in this shipment
+            while (!products.empty())
             {
+                // Remove this product from the list, with the intention that
+                // it will be catered to
+                const nist_gear::Product product = products.front();
+                products.erase(products.begin());
+
+                // Get the bins in which this part appears
                 const std::vector<int> bin_indices = agility->get_camera_indices_of(product.type);
                 if (bin_indices.empty())
                 {
@@ -93,24 +100,7 @@ namespace {
                     ros::shutdown();
                     return;
                 }
-                else
-                {
-                    product_location_pairs.push_back(std::make_pair(
-                        product,
-                        bin_indices
-                    ));
-                }
-            }
 
-            // loop through each product in this shipment
-            int product_placed_in_shipment = 0;
-            for (int product_idx = 0; product_idx < product_location_pairs.size();)
-            {
-                nist_gear::Product product;
-                std::vector<int> bin_indices;
-                std::tie(product, bin_indices) = product_location_pairs[product_idx];
-
-                // Even if we did not increment product_idx, increment counter
                 counter++;
 
                 for (auto iter = bin_indices.cbegin(); iter != bin_indices.cend(); ++iter)
@@ -127,7 +117,7 @@ namespace {
                     ROS_INFO_STREAM("Placed part '" << product.type << "' at '" << ks.agv_id << "'");
                     agility->queue_for_fault_verification(
                         ks.agv_id,
-                        product.type,
+                        product,
                         arm->transform_to_world_frame(product.pose, ks.agv_id)
                     );
                     ros::Duration(0.2).sleep();
@@ -139,26 +129,32 @@ namespace {
                     if (!agility->is_sensor_blackout_active())
                     {
                         // If this part is faulty, move it
-                        std::string faulty_part_agv_id, faulty_part_product_type;
+                        std::string faulty_part_agv_id;
+                        nist_gear::Product faulty_part_product;
                         geometry_msgs::Pose faulty_part_pick_frame;
                         while (agility->get_agv_faulty_part(faulty_part_agv_id,
-                                                            faulty_part_product_type,
+                                                            faulty_part_product,
                                                             faulty_part_pick_frame))
                         {
                             ROS_INFO_STREAM("Moving faulty part: "
                                             << faulty_part_agv_id
                                             << ", "
-                                            << faulty_part_product_type);
+                                            << faulty_part_product.type);
 
+                            // Move this part to the disposal bin
                             // TODO: tweak all the stops/sleeps?
                             arm->goToPresetLocation(faulty_part_agv_id);
-                            if (arm->pickPart(faulty_part_product_type, faulty_part_pick_frame))
+                            if (arm->pickPart(faulty_part_product.type, faulty_part_pick_frame))
                             {
                                 ros::Duration(2.0).sleep();
                                 arm->goToPresetLocation(faulty_part_agv_id);
                                 arm->goToPresetLocation("home2");
                                 ros::Duration(0.5).sleep();
                                 arm->deactivateGripper();
+
+                                // Place this product back in the queue to be
+                                // picked again elsewhere
+                                products.push_back(faulty_part_product);
                             }
                             else
                             {
@@ -169,10 +165,6 @@ namespace {
                             cater_higher_priority_order_if_necessary(agv_map, agility, arm, order_priority);
                         }
                     }
-
-                    // We successfully placed the product
-                    product_idx++;
-                    break;
                 }
             }
 
