@@ -11,16 +11,15 @@
 
 void AgilityChallenger::order_callback(const nist_gear::Order::ConstPtr& msg)
 {
-    const std::string order_id = msg->order_id;
     // Temporary functionality, where order_1 is 'hardcoded' to be a high
     // priority order, others are not
-    ROS_INFO_STREAM("Received order with ID '"
-                    << order_id
-                    << "'"
-                    << ((order_id == "order_1") ? " (High-Priority!)" : ""));
+    pending_order = *msg;
+    pending_order_priority = (pending_order.order_id == "order_1") ? 2 : 1;
 
-    assert(!msg->kitting_shipments.empty());
-    current_kitting_shipments = msg->kitting_shipments;
+    ROS_INFO_STREAM("Received order with ID '"
+                    << pending_order.order_id
+                    << "' with priority "
+                    << pending_order_priority);
 }
 
 void AgilityChallenger::blackout_status_callback(const std_msgs::Bool::ConstPtr& msg)
@@ -107,6 +106,7 @@ void AgilityChallenger::quality_control_sensor4_callback(const nist_gear::Logica
 
 AgilityChallenger::AgilityChallenger(ros::NodeHandle* const nh) :
     tf_listener(tf_buffer),
+    pending_order_priority(0),
     in_sensor_blackout(false)
 {
     orders_subs = nh->subscribe<nist_gear::Order>(
@@ -175,9 +175,22 @@ AgilityChallenger::~AgilityChallenger()
 {
 }
 
-std::vector<nist_gear::KittingShipment> AgilityChallenger::get_current_kitting_shipments() const
+int AgilityChallenger::consume_pending_order(nist_gear::Order& order)
 {
-    return current_kitting_shipments;
+    // 'Consume' the current order
+    order = pending_order;
+    pending_order = nist_gear::Order();
+
+    // 'Consume' its priority
+    const int priority = pending_order_priority;
+    pending_order_priority = 0;
+
+    return priority;
+}
+
+bool AgilityChallenger::higher_priority_order_requested(const int current_priority) const
+{
+    return pending_order_priority > current_priority;
 }
 
 std::vector<int> AgilityChallenger::get_camera_indices_of(const std::string& product_type) const

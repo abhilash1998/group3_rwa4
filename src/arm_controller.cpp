@@ -45,11 +45,31 @@ namespace {
         return rc;
     }
 
-    void cater_kitting_shipments(const AriacAgvMap& agv_map, AgilityChallenger* const agility, Arm* const arm)
+    void cater_higher_priority_order_if_necessary(const AriacAgvMap& agv_map,
+                                                  AgilityChallenger* const agility,
+                                                  Arm* const arm,
+                                                  const int current_order_priority);
+
+    void cater_kitting_shipments(const AriacAgvMap& agv_map,
+                                 AgilityChallenger* const agility,
+                                 Arm* const arm,
+                                 const int order_priority,
+                                 std::vector<nist_gear::KittingShipment>& kitting_shipments)
     {
+        // Ignore request if there are no kitting shipments
+        if (kitting_shipments.empty())
+        {
+            return;
+        }
+
+        ROS_INFO_STREAM("Catering "
+                        << kitting_shipments.size()
+                        << " kitting shipments from order with priority of "
+                        << order_priority);
+
         int counter = 0;
         // parse each kitting shipment
-        for (const auto& ks : agility->get_current_kitting_shipments())
+        for (const auto& ks : kitting_shipments)
         {
             if (ks.products.empty())
             {
@@ -106,6 +126,9 @@ namespace {
                     arm->movePart(product.type, part_frame, product.pose, ks.agv_id);
                     ROS_INFO_STREAM("Placed part '" << product.type << "' at '" << ks.agv_id << "'");
 
+                    // Give an opportunity for higher priority orders
+                    cater_higher_priority_order_if_necessary(agv_map, agility, arm, order_priority);
+
                     // If this part is faulty, move it
                     geometry_msgs::Pose faulty_part_pick_frame;
                     if (agility->get_agv_faulty_part(faulty_part_pick_frame))
@@ -125,6 +148,9 @@ namespace {
                         {
                             ROS_ERROR_STREAM("Failed to pick the faulty part");
                         }
+
+                        // Give an opportunity for higher priority orders
+                        cater_higher_priority_order_if_necessary(agv_map, agility, arm, order_priority);
                     }
                     else
                     {
@@ -159,6 +185,37 @@ namespace {
                 ros::shutdown();
                 return;
             }
+        }
+    }
+
+    void cater_order(const AriacAgvMap& agv_map,
+                     AgilityChallenger* const agility,
+                     Arm* const arm,
+                     const int order_priority,
+                     nist_gear::Order& order)
+    {
+        cater_kitting_shipments(
+            agv_map,
+            agility,
+            arm,
+            order_priority,
+            order.kitting_shipments
+        );
+    }
+
+    void cater_higher_priority_order_if_necessary(const AriacAgvMap& agv_map,
+                                                  AgilityChallenger* const agility,
+                                                  Arm* const arm,
+                                                  const int current_order_priority)
+    {
+        if (agility->higher_priority_order_requested(current_order_priority))
+        {
+            ROS_INFO_STREAM("Catering higher priority order...");
+            int new_order_priority;
+            nist_gear::Order new_order;
+            new_order_priority = agility->consume_pending_order(new_order);
+            cater_order(agv_map, agility, arm, new_order_priority, new_order);
+            ROS_INFO_STREAM("Finished higher priority order, returning to previous order");
         }
     }
 }
@@ -252,9 +309,27 @@ int main(int argc, char **argv)
     arm.goToPresetLocation("home1");
     arm.goToPresetLocation("home2");
 
-    cater_kitting_shipments(agv_map, &agility, &arm);
-
-    ros::waitForShutdown();
+    int current_order_priority;
+    nist_gear::Order current_order;
+    ros::Duration rate(0.1);
+    while (ros::ok())
+    {
+        current_order_priority = agility.consume_pending_order(current_order);
+        if (0 != current_order_priority)
+        {
+            cater_order(
+                agv_map,
+                &agility,
+                &arm,
+                current_order_priority,
+                current_order
+            );
+        }
+        else
+        {
+            rate.sleep();
+        }
+    }
 
     return 0;
 }

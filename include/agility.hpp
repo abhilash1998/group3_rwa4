@@ -22,7 +22,14 @@ protected:
     std::array<ros::Subscriber, 4> logical_camera_subs;
     std::array<ros::Subscriber, 4> quality_control_sensor_subs;
 
-    std::vector<nist_gear::KittingShipment> current_kitting_shipments;
+    // The relative priority of the order at \a pending_order. If this is 0,
+    // the \a pending_order is not populated / not a valid order.
+    int pending_order_priority;
+
+    // An order that was received and is pending to be catered. This is
+    // consumed by callers of consume_pending_order(nist_gear::Order&).
+    nist_gear::Order pending_order;
+
     std::array<std::vector<std::string>, 4> current_logical_camera_data;
     bool in_sensor_blackout;
 
@@ -49,7 +56,21 @@ public:
     AgilityChallenger(ros::NodeHandle* const nh);
     ~AgilityChallenger();
 
-    std::vector<nist_gear::KittingShipment> get_current_kitting_shipments() const;
+    // Pass ownership of \a pending_order off to the caller of this method if
+    // it is populated.
+    // @param order If there is a pending order (\a pending_order_priority is
+    // nonzero), this is overwritten with \a pending_order.
+    // @return The current value of \a pending_order_priority.
+    int consume_pending_order(nist_gear::Order& order);
+
+    // Get whether or not there is an order with a priority that is higher than
+    // the given one.
+    // @param current_priority The priority of the order being catered by the
+    // caller of this method.
+    // @return Whether or not \a pending_order_priority is greater than
+    // \a current_priority.
+    bool higher_priority_order_requested(const int current_priority) const;
+
     std::vector<int> get_camera_indices_of(const std::string& product_type) const;
     std::string get_logical_camera_contents() const;
 
