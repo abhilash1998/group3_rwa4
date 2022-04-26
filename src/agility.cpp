@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <numeric>
+#include <cmath>
 
 void AgilityChallenger::order_callback(const nist_gear::Order::ConstPtr& msg)
 {
@@ -33,7 +34,7 @@ void AgilityChallenger::help_logical_camera_image_callback(const nist_gear::Logi
     // Clear the list of parts that this camera currently sees, and repopulate
     // it with updated data
     // Notice the vector is a reference
-    std::vector<std::string>& current_parts_bin_idx = current_logical_camera_data[bin_idx];
+    std::vector<std::string>& current_parts_bin_idx = current_detected_parts[bin_idx];
     current_parts_bin_idx.clear();
     for (auto iter_model = msg->models.begin(); iter_model != msg->models.end(); ++iter_model)
     {
@@ -53,7 +54,54 @@ void AgilityChallenger::help_quality_control_sensor_callback(const nist_gear::Lo
                         << " to "
                         << new_results.models.size());
     }
+
     current_qc_results[lc_idx] = new_results;
+
+    const std::string agv_id = std::string("agv") + std::to_string(lc_idx+1);
+
+    // Loop through each of the existing parts that need verification. Create a
+    // new list, where parts are only added if they show up as faulty by the QC
+    // sensor.
+    std::vector<PartForFaultVerification> new_list;
+    for (const PartForFaultVerification& part : parts_for_fault_verification[agv_id])
+    {
+        // We have the part already resolved in world frame, store its 3D
+        // position in ppt
+        bool found_part = false;
+        const geometry_msgs::Point ppt = part.second.position;
+        for (const nist_gear::Model model : new_results.models)
+        {
+            // Get this model in world frame, store its 3D position in mpt
+            geometry_msgs::Pose mpose;
+            tf2::Transform qc_camera_tf, part_tf;
+            tf2::fromMsg(current_qc_results[lc_idx].pose, qc_camera_tf);
+            tf2::fromMsg(model.pose, part_tf);
+            tf2::toMsg(qc_camera_tf * part_tf, mpose);
+            const geometry_msgs::Point mpt = mpose.position;
+
+            // If its within (0.1m, 0.1m) on the X/Y plane, consider it the same model
+            const double dx = std::abs(mpt.x - ppt.x);
+            const double dy = std::abs(mpt.y - ppt.y);
+            ROS_DEBUG_STREAM("ppt=[x:" << ppt.x << ",y:" << ppt.y << "] vs. mpt=[x:" << mpt.x << ",y:" << mpt.y << "]");
+            ROS_DEBUG_STREAM("dx=" << dx << ", dy=" << dy);
+            if ((dx < 0.1) && (dy < 0.1))
+            {
+                // We found the part we were interested in
+                found_part = true;
+                new_list.push_back(part);
+                break;
+            }
+        }
+        if (!found_part)
+        {
+            // If we didn't find the part, it means the model wasn't picked up
+            // by the QC camera, meaning that either 1.) it was never faulty
+            // and this confirmed that, or 2.) it was faulty but was removed
+            // from the tray by the robot
+            ROS_INFO_STREAM("Removed part at [x:" << ppt.x << ",y:" << ppt.y << "] from faulty part verification queue");
+        }
+    }
+    parts_for_fault_verification[agv_id] = new_list;
 }
 
 void AgilityChallenger::logical_camera_image1_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg)
@@ -168,10 +216,40 @@ AgilityChallenger::AgilityChallenger(ros::NodeHandle* const nh) :
         &AgilityChallenger::quality_control_sensor4_callback,
         this
     );
+
+    parts_for_fault_verification = {
+        {"agv1", {}},
+        {"agv2", {}},
+        {"agv3", {}},
+        {"agv4", {}}
+    };
 }
 
 AgilityChallenger::~AgilityChallenger()
 {
+}
+
+bool AgilityChallenger::is_sensor_blackout_active() const
+{
+    return in_sensor_blackout;
+}
+
+void AgilityChallenger::queue_for_fault_verification(const std::string& agv_id,
+                                                     const std::string& product_type,
+                                                     const geometry_msgs::Pose& objective_pose_in_world)
+{
+    ROS_INFO_STREAM("Queueing part for fault verification: "
+                    << agv_id
+                    << ", "
+                    << product_type
+                    << ", "
+                    << objective_pose_in_world);
+    parts_for_fault_verification[agv_id].push_back(std::make_pair(product_type, objective_pose_in_world));
+}
+
+bool AgilityChallenger::needs_fault_verification(const std::string& agv_id)
+{
+    return !parts_for_fault_verification[agv_id].empty();
 }
 
 int AgilityChallenger::consume_pending_order(nist_gear::Order& order)
@@ -195,9 +273,9 @@ bool AgilityChallenger::higher_priority_order_requested(const int current_priori
 std::vector<int> AgilityChallenger::get_camera_indices_of(const std::string& product_type) const
 {
     std::vector<int> indices;
-    for (int i = 0; i < current_logical_camera_data.size(); i++)
+    for (int i = 0; i < current_detected_parts.size(); i++)
     {
-        const std::vector<std::string>& lcd = current_logical_camera_data[i];
+        const std::vector<std::string>& lcd = current_detected_parts[i];
         if (lcd.cend() != std::find(lcd.cbegin(), lcd.cend(), product_type))
         {
             indices.push_back(i+1);
@@ -209,14 +287,14 @@ std::vector<int> AgilityChallenger::get_camera_indices_of(const std::string& pro
 std::string AgilityChallenger::get_logical_camera_contents() const
 {
     std::string str = "{";
-    for (int i = 0; i < current_logical_camera_data.size(); i++)
+    for (int i = 0; i < current_detected_parts.size(); i++)
     {
         if (i != 0)
         {
             str += ", ";
         }
 
-        const std::vector<std::string>& lcd = current_logical_camera_data[i];
+        const std::vector<std::string>& lcd = current_detected_parts[i];
         str += (std::to_string(i+1) + ": [");
         if (!lcd.empty())
         {
@@ -232,16 +310,17 @@ std::string AgilityChallenger::get_logical_camera_contents() const
     return str;
 }
 
-bool AgilityChallenger::get_agv_faulty_part(geometry_msgs::Pose& pick_frame) const
+bool AgilityChallenger::get_agv_faulty_part(std::string& agv_id,
+                                            std::string& product_type,
+                                            geometry_msgs::Pose& pick_frame) const
 {
-    for (auto iter = current_qc_results.cbegin(); iter != current_qc_results.cend(); ++iter)
+    for (auto iter = parts_for_fault_verification.cbegin(); iter != parts_for_fault_verification.cend(); ++iter)
     {
-        if (!iter->models.empty())
+        const std::vector<PartForFaultVerification> iter_parts = iter->second;
+        if (!iter_parts.empty())
         {
-            tf2::Transform logical_camera_tf, faulty_part_tf;
-            tf2::fromMsg(iter->pose, logical_camera_tf);
-            tf2::fromMsg(iter->models.front().pose, faulty_part_tf);
-            tf2::toMsg(logical_camera_tf * faulty_part_tf, pick_frame);
+            agv_id = iter->first;
+            std::tie(product_type, pick_frame) = iter_parts.front();
             return true;
         }
     }

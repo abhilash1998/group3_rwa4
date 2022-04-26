@@ -16,7 +16,8 @@ namespace utils
     template <typename T>
     bool contains(std::vector<T> vec, const T& elem);
 
-    geometry_msgs::Pose transformToWorldFrame(const geometry_msgs::Pose& target,std::string agv);
+    geometry_msgs::Pose transformToWorldFrame(const geometry_msgs::Pose& target, const std::string& agv, tf2_ros::Buffer& tfBuffer);
+    geometry_msgs::Pose transformToWorldFrame(const geometry_msgs::Pose& target, const std::string& agv);
     geometry_msgs::Pose transformToWorldFrame(const std::string& part_in_camera_frame, tf2_ros::Buffer& tfBuffer);
     geometry_msgs::Pose transformToWorldFrame(const std::string& part_in_camera_frame);
     std::array<double, 3> eulerFromQuaternion(const geometry_msgs::Pose& pose);

@@ -386,6 +386,11 @@ void Arm::goToPresetLocation(std::string location_name)
         arm_group_.move();
 }
 
+geometry_msgs::Pose Arm::transform_to_world_frame(const geometry_msgs::Pose& target, const std::string& agv_id)
+{
+    return utils::transformToWorldFrame(target, agv_id, tf_buffer);
+}
+
 ///////////////////////////
 ////// Callback Functions
 ///////////////////////////

@@ -125,39 +125,54 @@ namespace {
                     ROS_INFO_STREAM("Moving part '" << product.type << "' to '" << ks.agv_id << "' (" << part_frame << ")");
                     arm->movePart(product.type, part_frame, product.pose, ks.agv_id);
                     ROS_INFO_STREAM("Placed part '" << product.type << "' at '" << ks.agv_id << "'");
+                    agility->queue_for_fault_verification(
+                        ks.agv_id,
+                        product.type,
+                        arm->transform_to_world_frame(product.pose, ks.agv_id)
+                    );
+                    ros::Duration(0.2).sleep();
 
                     // Give an opportunity for higher priority orders
                     cater_higher_priority_order_if_necessary(agv_map, agility, arm, order_priority);
 
-                    // If this part is faulty, move it
-                    geometry_msgs::Pose faulty_part_pick_frame;
-                    if (agility->get_agv_faulty_part(faulty_part_pick_frame))
+                    // If there is no sensor blackout, check for faulty parts
+                    if (!agility->is_sensor_blackout_active())
                     {
-                        // TODO: tweak all the stops/sleeps?
-                        ROS_WARN_STREAM("Placed part is faulty!");
-                        arm->goToPresetLocation(ks.agv_id);
-                        if (arm->pickPart(product.type, faulty_part_pick_frame))
+                        // If this part is faulty, move it
+                        std::string faulty_part_agv_id, faulty_part_product_type;
+                        geometry_msgs::Pose faulty_part_pick_frame;
+                        while (agility->get_agv_faulty_part(faulty_part_agv_id,
+                                                            faulty_part_product_type,
+                                                            faulty_part_pick_frame))
                         {
-                            ros::Duration(2.0).sleep();
-                            arm->goToPresetLocation(ks.agv_id);
-                            arm->goToPresetLocation("home2");
-                            ros::Duration(0.5).sleep();
-                            arm->deactivateGripper();
-                        }
-                        else
-                        {
-                            ROS_ERROR_STREAM("Failed to pick the faulty part");
-                        }
+                            ROS_INFO_STREAM("Moving faulty part: "
+                                            << faulty_part_agv_id
+                                            << ", "
+                                            << faulty_part_product_type);
 
-                        // Give an opportunity for higher priority orders
-                        cater_higher_priority_order_if_necessary(agv_map, agility, arm, order_priority);
+                            // TODO: tweak all the stops/sleeps?
+                            arm->goToPresetLocation(faulty_part_agv_id);
+                            if (arm->pickPart(faulty_part_product_type, faulty_part_pick_frame))
+                            {
+                                ros::Duration(2.0).sleep();
+                                arm->goToPresetLocation(faulty_part_agv_id);
+                                arm->goToPresetLocation("home2");
+                                ros::Duration(0.5).sleep();
+                                arm->deactivateGripper();
+                            }
+                            else
+                            {
+                                ROS_ERROR_STREAM("Failed to pick the faulty part");
+                            }
+
+                            // Give an opportunity for higher priority orders
+                            cater_higher_priority_order_if_necessary(agv_map, agility, arm, order_priority);
+                        }
                     }
-                    else
-                    {
-                        // We successfully placed the product
-                        product_idx++;
-                        break;
-                    }
+
+                    // We successfully placed the product
+                    product_idx++;
+                    break;
                 }
             }
 

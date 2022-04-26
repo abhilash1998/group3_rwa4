@@ -8,10 +8,13 @@
 #include <string>
 #include <array>
 #include <vector>
+#include <unordered_map>
 
 class AgilityChallenger
 {
 protected:
+    using PartForFaultVerification = std::pair<std::string, geometry_msgs::Pose>;
+
     ros::Subscriber orders_subs;
     ros::Subscriber blackout_sub;
     std::array<ros::Subscriber, 4> logical_camera_subs;
@@ -25,8 +28,14 @@ protected:
     // consumed by callers of consume_pending_order(nist_gear::Order&).
     nist_gear::Order pending_order;
 
-    std::array<std::vector<std::string>, 4> current_logical_camera_data;
+    // The parts currently detected by the logical cameras
+    std::array<std::vector<std::string>, 4> current_detected_parts;
+
+    // True if a sensor blackout was detected right now, false otherwise
     bool in_sensor_blackout;
+
+    // 
+    std::unordered_map<std::string, std::vector<PartForFaultVerification>> parts_for_fault_verification;
 
     // The most recently heard quality control updates heard from QC cameras
     // 1-4 (with indices [0,3])
@@ -51,6 +60,19 @@ public:
     AgilityChallenger(ros::NodeHandle* const nh);
     ~AgilityChallenger();
 
+    // Getter for \a sensor_blackout_active.
+    // @return The value of \a sensor_blackout_active (true if a blackout is
+    // active, false otherwise).
+    bool is_sensor_blackout_active() const;
+
+    // 
+    void queue_for_fault_verification(const std::string& agv_id,
+                                      const std::string& product_type,
+                                      const geometry_msgs::Pose& objective_pose_in_world);
+
+    // 
+    bool needs_fault_verification(const std::string& agv_id);
+
     // Pass ownership of \a pending_order off to the caller of this method if
     // it is populated.
     // @param order If there is a pending order (\a pending_order_priority is
@@ -74,5 +96,7 @@ public:
     // overwritten with the pose of a faulty part resolved in world frame,
     // if false then this value is not overwritten
     // @return True if there is a faulty part, false otherwise.
-    bool get_agv_faulty_part(geometry_msgs::Pose& pick_frame) const;
+    bool get_agv_faulty_part(std::string& agv_id,
+                             std::string& product_type,
+                             geometry_msgs::Pose& pick_frame) const;
 };

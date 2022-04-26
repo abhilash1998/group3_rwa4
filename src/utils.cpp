@@ -91,7 +91,7 @@ namespace utils
         return transformToWorldFrame(part_in_camera_frame, tfBuffer);
     }
 
-    geometry_msgs::Pose transformToWorldFrame(const geometry_msgs::Pose& target, std::string agv)
+    geometry_msgs::Pose transformToWorldFrame(const geometry_msgs::Pose& target, const std::string& agv, tf2_ros::Buffer& tfBuffer)
     {
         static tf2_ros::StaticTransformBroadcaster br;
         geometry_msgs::TransformStamped transformStamped;
@@ -120,8 +120,6 @@ namespace utils
         for (int i{ 0 }; i < 15; ++i)
             br.sendTransform(transformStamped);
 
-        tf2_ros::Buffer tfBuffer;
-        tf2_ros::TransformListener tfListener(tfBuffer);
         ros::Rate rate(10);
         ros::Duration timeout(1.0);
 
@@ -154,5 +152,12 @@ namespace utils
         world_pose.orientation.w = world_pose_tf.transform.rotation.w;
 
         return world_pose;
+    }
+
+    geometry_msgs::Pose transformToWorldFrame(const geometry_msgs::Pose& target, const std::string& agv)
+    {
+        tf2_ros::Buffer tfBuffer;
+        tf2_ros::TransformListener tfListener(tfBuffer);
+        return transformToWorldFrame(target, agv, tfBuffer);
     }
 }
