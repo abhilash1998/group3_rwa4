@@ -11,7 +11,7 @@
 #include "arm.hpp"
 
 #define NUM_AGVS 4
-
+std::vector<std::string> hit_list;
 using AriacAgvMap = std::unordered_map<std::string, std::shared_ptr<AriacAgv>>;
 
 namespace {
@@ -72,7 +72,7 @@ namespace {
             // Move this part to the disposal bin
             // TODO: tweak all the stops/sleeps?
             arm->goToPresetLocation(faulty_part_agv_id);
-            if (arm->pickPart(faulty_part_product.type, faulty_part_pick_frame))
+            if (arm->pickPart(faulty_part_product.type, faulty_part_pick_frame, 1))
             {
                 ros::Duration(2.0).sleep();
                 arm->goToPresetLocation(faulty_part_agv_id);
@@ -148,11 +148,41 @@ namespace {
                     return;
                 }
 
-                counter++;
+                // counter++;
 
                 for (auto iter = bin_indices.cbegin(); iter != bin_indices.cend(); ++iter)
                 {
-                    const std::string part_frame = build_part_frame(product.type, *iter, counter);
+                    std::string part_frame;
+                    for (counter = 1; counter <= 12; counter++)
+                    {
+                        bool hit = false;
+                        part_frame = build_part_frame(product.type, *iter, counter);
+                        if (does_frame_exist(part_frame, 0.5))
+                        {
+                            if (hit_list.empty())
+                            {   
+                                // ROS_INFO_STREAM("Hit List Updated");
+                                hit_list.emplace_back(product.type + std::to_string(counter));
+                            }
+                            else
+                            {
+                                for (auto s : hit_list)
+                                {
+                                    if(s.compare(product.type + std::to_string(counter)) == 0)
+                                    {
+                                        hit = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (hit) {continue;}
+                            else 
+                            {
+                                hit_list.emplace_back(product.type + std::to_string(counter));
+                                break;
+                            }
+                        }
+                    }
                     if (!does_frame_exist(part_frame, 0.5))
                     {
                         continue;
@@ -180,6 +210,10 @@ namespace {
                         // priority orders
                         cater_faulty_parts(agility, arm, order_id, products);
                         cater_higher_priority_order_if_necessary(agv_map, agility, arm, order_priority);
+                    }
+                    else
+                    {
+                         ROS_ERROR_STREAM("SENSOR BLCKOUT");
                     }
 
                     // It may be faulty, but we placed the part. Whether it was

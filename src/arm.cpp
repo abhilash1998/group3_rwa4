@@ -105,7 +105,7 @@ void Arm::movePart(std::string part_type, std::string camera_frame, geometry_msg
 {
     //convert goal_in_tray_frame into world frame
     auto init_pose_in_world = utils::transformToWorldFrame(camera_frame, tf_buffer);
-    if (pickPart(part_type, init_pose_in_world)) {
+    if (pickPart(part_type, init_pose_in_world, 0)) {
         placePart(init_pose_in_world, goal_in_tray_frame, agv);
     }
 }
@@ -125,7 +125,7 @@ nist_gear::VacuumGripperState Arm::getGripperState()
  *
  * We use the group full_gantry_group_ to allow the robot more flexibility
  */
-bool Arm::pickPart(std::string part_type, geometry_msgs::Pose part_init_pose)
+bool Arm::pickPart(std::string part_type, geometry_msgs::Pose part_init_pose, int ss)
 {
     arm_group_.setMaxVelocityScalingFactor(1.0);
 
@@ -163,17 +163,34 @@ bool Arm::pickPart(std::string part_type, geometry_msgs::Pose part_init_pose)
     // some parts are bigger than others
     // TODO: Add new z_pos values for the regulator and the battery
     double z_pos{};
-    if (part_type.find("pump") != std::string::npos) {
-        z_pos = 0.86;
+    if (ss == 0){
+        
+        if (part_type.find("pump") != std::string::npos) {
+            z_pos = 0.863;
+        }
+        if (part_type.find("sensor") != std::string::npos) {
+            z_pos = 0.83;
+        }
+        if (part_type.find("regulator") != std::string::npos) {
+            z_pos = 0.813;
+        }
+        if (part_type.find("battery") != std::string::npos) {
+            z_pos = 0.793;
+        }
     }
-    if (part_type.find("sensor") != std::string::npos) {
-        z_pos = 0.83;
-    }
-    if (part_type.find("regulator") != std::string::npos) {
-        z_pos = 0.81;
-    }
-    if (part_type.find("battery") != std::string::npos) {
-        z_pos = 0.79;
+    else{
+        if (part_type.find("pump") != std::string::npos) {
+            z_pos = 0.883;
+        }
+        if (part_type.find("sensor") != std::string::npos) {
+            z_pos = 0.853;
+        }
+        if (part_type.find("regulator") != std::string::npos) {
+            z_pos = 0.833;
+        }
+        if (part_type.find("battery") != std::string::npos) {
+            z_pos = 0.823;
+        }
     }
 
     // flat_orientation = utils::quaternionFromEuler(0, 1.57, 0);
@@ -316,8 +333,9 @@ bool Arm::placePart(geometry_msgs::Pose part_init_pose, geometry_msgs::Pose part
     arm_group_.move();
     ros::Duration(2.0).sleep();
     deactivateGripper();
-    goToPresetLocation(agv);
     arm_group_.setMaxVelocityScalingFactor(1.0);
+    goToPresetLocation(agv);
+    
 
     return true;
 }
