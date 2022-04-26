@@ -116,7 +116,7 @@ AgilityChallenger::AgilityChallenger(ros::NodeHandle* const nh) :
         this
     );
     blackout_sub = nh->subscribe<std_msgs::Bool>(
-        "/group3/in_sensor_blackout",
+        "/group3/blackout_active",
         1,
         &AgilityChallenger::blackout_status_callback,
         this
