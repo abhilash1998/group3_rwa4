@@ -51,8 +51,6 @@ namespace {
         // parse each kitting shipment
         for (const auto& ks : agility->get_current_kitting_shipments())
         {
-            counter++;
-
             if (ks.products.empty())
             {
                 ROS_FATAL_STREAM("Kitting shipment had no products?");
@@ -60,7 +58,7 @@ namespace {
                 return;
             }
 
-            std::vector<std::pair<nist_gear::Product, std::vector<int>>> camera_for_product;
+            std::vector<std::pair<nist_gear::Product, std::vector<int>>> product_location_pairs;
             for (const auto& product : ks.products)
             {
                 const std::vector<int> bin_indices = agility->get_camera_indices_of(product.type);
@@ -77,67 +75,89 @@ namespace {
                 }
                 else
                 {
-                    camera_for_product.push_back(std::make_pair(
+                    product_location_pairs.push_back(std::make_pair(
                         product,
                         bin_indices
                     ));
                 }
             }
 
-            // keep track of how many products have been placed in this shipment
+            // loop through each product in this shipment
             int product_placed_in_shipment = 0;
-            for (auto product_pair : camera_for_product)
+            for (int product_idx = 0; product_idx < product_location_pairs.size();)
             {
-                const nist_gear::Product product = product_pair.first;
-                const std::vector<int> bin_indices = product_pair.second;
+                nist_gear::Product product;
+                std::vector<int> bin_indices;
+                std::tie(product, bin_indices) = product_location_pairs[product_idx];
 
-                bool product_found = false;
-                for (auto bin_idx : bin_indices)
+                // Even if we did not increment product_idx, increment counter
+                counter++;
+
+                for (auto iter = bin_indices.cbegin(); iter != bin_indices.cend(); ++iter)
                 {
-                    const std::string part_frame = build_part_frame(product.type, bin_idx, counter);
+                    const std::string part_frame = build_part_frame(product.type, *iter, counter);
                     if (!does_frame_exist(part_frame, 0.5))
                     {
                         continue;
                     }
 
-                    product_found = true;
+                    // Move the part from where it is to the AGV bed
                     ROS_INFO_STREAM("Moving part '" << product.type << "' to '" << ks.agv_id << "' (" << part_frame << ")");
                     arm->movePart(product.type, part_frame, product.pose, ks.agv_id);
                     ROS_INFO_STREAM("Placed part '" << product.type << "' at '" << ks.agv_id << "'");
-                    product_placed_in_shipment++;
 
-                    // if we have placed all products in this shipment then ship the AGV
-                    if (product_placed_in_shipment == ks.products.size())
+                    // If this part is faulty, move it
+                    geometry_msgs::Pose faulty_part_pick_frame;
+                    if (agility->get_agv_faulty_part(faulty_part_pick_frame))
                     {
-                        ros::Duration(1.0).sleep();
-                        const auto agv_iter = agv_map.find(ks.agv_id);
-                        if (agv_map.cend() != agv_iter)
+                        // TODO: tweak all the stops/sleeps?
+                        ROS_WARN_STREAM("Placed part is faulty!");
+                        arm->goToPresetLocation(ks.agv_id);
+                        if (arm->pickPart(product.type, faulty_part_pick_frame))
                         {
-                            const std::shared_ptr<AriacAgv> agv = agv_iter->second;
-                            if (agv->is_ready_to_deliver())
-                            {
-                                agv->submit_shipment(
-                                    ks.station_id,
-                                    ks.shipment_type
-                                );
-                            }
-                            else
-                            {
-                                ROS_ERROR_STREAM("AGV with ID " << ks.agv_id << " is not ready to ship");
-                            }
+                            ros::Duration(2.0).sleep();
+                            arm->goToPresetLocation(ks.agv_id);
+                            arm->goToPresetLocation("home2");
+                            ros::Duration(0.5).sleep();
+                            arm->deactivateGripper();
                         }
                         else
                         {
-                            ROS_FATAL_STREAM("Unknown AGV with ID " << ks.agv_id);
-                            ros::shutdown();
-                            return;
+                            ROS_ERROR_STREAM("Failed to pick the faulty part");
                         }
                     }
+                    else
+                    {
+                        // We successfully placed the product
+                        product_idx++;
+                        break;
+                    }
                 }
-                if (!product_found)
+            }
+
+            // If we're here, we have placed all products in this shipment
+            ros::Duration(1.0).sleep();
+            const auto agv_iter = agv_map.find(ks.agv_id);
+            if (agv_map.cend() != agv_iter)
+            {
+                const std::shared_ptr<AriacAgv> agv = agv_iter->second;
+                if (agv->is_ready_to_deliver())
                 {
-                    ROS_ERROR_STREAM("Product " << product.type << " was not found");
+                    agv->submit_shipment(
+                        ks.station_id,
+                        ks.shipment_type
+                    );
                 }
+                else
+                {
+                    ROS_ERROR_STREAM("AGV with ID " << ks.agv_id << " is not ready to ship");
+                }
+            }
+            else
+            {
+                ROS_FATAL_STREAM("Unknown AGV with ID " << ks.agv_id);
+                ros::shutdown();
+                return;
             }
         }
     }

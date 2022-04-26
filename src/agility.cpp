@@ -2,6 +2,10 @@
 
 #include <ros/node_handle.h>
 
+#include <geometry_msgs/Pose.h>
+
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+
 #include <algorithm>
 #include <numeric>
 
@@ -38,12 +42,19 @@ void AgilityChallenger::help_logical_camera_image_callback(const nist_gear::Logi
     }
 }
 
-void AgilityChallenger::help_quality_control_sensor_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg, const int agv_idx)
+void AgilityChallenger::help_quality_control_sensor_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg, const int lc_idx)
 {
-    if (msg->models.size() > 0)
+    const nist_gear::LogicalCameraImage new_results = *msg;
+    if (new_results.models.size() != current_qc_results[lc_idx].models.size())
     {
-        ROS_ERROR_STREAM("FOUND FAULTY PART ON AGV" << agv_idx);
+        ROS_INFO_STREAM("Number of faulty models from logical camera #"
+                        << lc_idx+1
+                        << " changed from "
+                        << current_qc_results[lc_idx].models.size()
+                        << " to "
+                        << new_results.models.size());
     }
+    current_qc_results[lc_idx] = new_results;
 }
 
 void AgilityChallenger::logical_camera_image1_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg)
@@ -207,4 +218,20 @@ std::string AgilityChallenger::get_logical_camera_contents() const
         str += "]";
     }
     return str;
+}
+
+bool AgilityChallenger::get_agv_faulty_part(geometry_msgs::Pose& pick_frame) const
+{
+    for (auto iter = current_qc_results.cbegin(); iter != current_qc_results.cend(); ++iter)
+    {
+        if (!iter->models.empty())
+        {
+            tf2::Transform logical_camera_tf, faulty_part_tf;
+            tf2::fromMsg(iter->pose, logical_camera_tf);
+            tf2::fromMsg(iter->models.front().pose, faulty_part_tf);
+            tf2::toMsg(logical_camera_tf * faulty_part_tf, pick_frame);
+            return true;
+        }
+    }
+    return false;
 }
