@@ -47,30 +47,6 @@ public:
     void activateGripper();
     void deactivateGripper();
 
-    void check_part_pose(geometry_msgs::Pose target_pose_in_world,std::string agv);
-
-    void qualityControl1Callback(const nist_gear::LogicalCameraImage::ConstPtr & msg);
-    void qualityControl2Callback(const nist_gear::LogicalCameraImage::ConstPtr & msg);
-    void qualityControl3Callback(const nist_gear::LogicalCameraImage::ConstPtr & msg);
-    void qualityControl4Callback(const nist_gear::LogicalCameraImage::ConstPtr & msg);
-
-    bool& get_quality_camera1_data()
-    {
-        return quality_camera_1;
-    }
-    bool& get_quality_camera2_data()
-    {
-        return quality_camera_2;
-    }
-    bool& get_quality_camera3_data()
-    {
-        return quality_camera_3;
-    }
-    bool& get_quality_camera4_data()
-    {
-        return quality_camera_4;
-    }
-
     /**
      * @brief Move the joint linear_arm_actuator_joint only
      *
@@ -90,13 +66,6 @@ public:
     //--preset locations;
     start home1_, home2_;
     agv agv1_, agv2_, agv3_, agv4_;
-
-    int* counter;
-    bool quality_camera_1;
-    bool quality_camera_2;
-    bool quality_camera_3;
-    bool quality_camera_4;
-    bool quality_camera[4];
 
 private:
     std::vector<double> joint_group_positions_;
@@ -124,12 +93,6 @@ private:
     void gripper_state_callback(const nist_gear::VacuumGripperState::ConstPtr& gripper_state_msg);
     void arm_joint_states_callback_(const sensor_msgs::JointState::ConstPtr& joint_state_msg);
     void arm_controller_state_callback(const control_msgs::JointTrajectoryControllerState::ConstPtr& msg);
-
-    ros::Subscriber Arm_quality_control_sensor_1_subscriber;
-    /*!< subscriber to the topic /ariac/quality_control_sensor_2 */
-    ros::Subscriber Arm_quality_control_sensor_2_subscriber;
-    ros::Subscriber Arm_quality_control_sensor_3_subscriber;
-    ros::Subscriber Arm_quality_control_sensor_4_subscriber;
 };
 
 #endif

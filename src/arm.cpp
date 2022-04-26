@@ -38,11 +38,6 @@ Arm::Arm() :
     gripper_control_client_ =
         node_.serviceClient<nist_gear::VacuumGripperControl>("/ariac/kitting/arm/gripper/control");
     gripper_control_client_.waitForExistence();
-    // subscribe to competition_quality_Control
-    Arm_quality_control_sensor_1_subscriber=node_.subscribe("/ariac/quality_control_sensor_1",10,&Arm::qualityControl1Callback,this);
-    Arm_quality_control_sensor_2_subscriber=node_.subscribe("/ariac/quality_control_sensor_2",10,&Arm::qualityControl2Callback,this);
-    Arm_quality_control_sensor_3_subscriber=node_.subscribe("/ariac/quality_control_sensor_3",10,&Arm::qualityControl3Callback,this);
-    Arm_quality_control_sensor_4_subscriber=node_.subscribe("/ariac/quality_control_sensor_4",10,&Arm::qualityControl4Callback,this);
     // Preset locations
     // ^^^^^^^^^^^^^^^^
     // Joints for the arm are in this order:
@@ -85,60 +80,6 @@ Arm::Arm() :
     current_state->copyJointGroupPositions(joint_model_group, joint_group_positions_);
 }
 
-void Arm::qualityControl1Callback(const nist_gear::LogicalCameraImage::ConstPtr& msg)
-{
-    // ROS_INFO_STREAM("MAP size: " << logical_camera_map_.size());
-    if (msg->models.size() > 0)
-    {
-        // ROS_WARN_STREAM("Faulty part detected");
-        quality_camera_1=true;
-        // ROS_WARN_STREAM("qual;ity"<<quality_camera_1_);
-    }
-    else
-    {
-        // ROS_WARN_STREAM("qual;ity False "<<quality_camera_1_);
-        quality_camera_1=false;
-    }
-}
-void Arm::qualityControl2Callback(const nist_gear::LogicalCameraImage::ConstPtr& msg)
-{
-    // ROS_INFO_STREAM("MAP size: " << logical_camera_map_.size());
-    if (msg->models.size() > 0)
-    {
-        // ROS_WARN_STREAM("Faulty part detected");
-        quality_camera_2=true;
-    }
-    else
-    {
-        quality_camera_2=false;
-    }
-}
-void Arm::qualityControl3Callback(const nist_gear::LogicalCameraImage::ConstPtr& msg)
-{
-    // ROS_INFO_STREAM("MAP size: " << logical_camera_map_.size());
-    if (msg->models.size() > 0)
-    {
-        // ROS_WARN_STREAM("Faulty part detected");
-        quality_camera_3=true;
-    }
-    else
-    {
-        quality_camera_3=false;
-    }
-}
-void Arm::qualityControl4Callback(const nist_gear::LogicalCameraImage::ConstPtr& msg)
-{
-    if (msg->models.size() > 0)
-    {
-        // ROS_WARN_STREAM("Faulty part detected");
-        quality_camera_4=true;
-    }
-    else
-    {
-        quality_camera_4=false;
-    }
-}
-
 //////////////////////////////////////////////////////
 void Arm::moveBaseTo(double linear_arm_actuator_joint_position)
 {
@@ -163,8 +104,6 @@ void Arm::movePart(std::string part_type, std::string camera_frame, geometry_msg
 {
     //convert goal_in_tray_frame into world frame
     auto init_pose_in_world = utils::transformToWorldFrame(camera_frame);
-    // ROS_INFO_STREAM(init_pose_in_world.position.x << " " << init_pose_in_world.position.y);
-    auto target_pose_in_world = utils::transformToWorldFrame(goal_in_tray_frame, agv);
     if (pickPart(part_type, init_pose_in_world)) {
         placePart(init_pose_in_world, goal_in_tray_frame, agv);
     }
