@@ -20,7 +20,8 @@ Arm::Arm() :
     node_("/ariac/kitting"),
     planning_group_("/ariac/kitting/robot_description"),
     arm_options_("kitting_arm", planning_group_, node_),
-    arm_group_(arm_options_)
+    arm_group_(arm_options_),
+    tf_listener(tf_buffer)
 {
     // publishers to directly control the joints without moveit
     arm_joint_trajectory_publisher_ =
@@ -103,7 +104,7 @@ void Arm::moveBaseTo(double linear_arm_actuator_joint_position)
 void Arm::movePart(std::string part_type, std::string camera_frame, geometry_msgs::Pose goal_in_tray_frame, std::string agv)
 {
     //convert goal_in_tray_frame into world frame
-    auto init_pose_in_world = utils::transformToWorldFrame(camera_frame);
+    auto init_pose_in_world = utils::transformToWorldFrame(camera_frame, tf_buffer);
     if (pickPart(part_type, init_pose_in_world)) {
         placePart(init_pose_in_world, goal_in_tray_frame, agv);
     }

@@ -1,6 +1,4 @@
 #include <ros/subscriber.h>
-#include <tf2_ros/buffer.h>
-#include <tf2_ros/transform_listener.h>
 
 #include <std_msgs/String.h>
 #include <std_msgs/Bool.h>
@@ -14,9 +12,6 @@
 class AgilityChallenger
 {
 protected:
-    tf2_ros::Buffer tf_buffer;
-    tf2_ros::TransformListener tf_listener;
-
     ros::Subscriber orders_subs;
     ros::Subscriber blackout_sub;
     std::array<ros::Subscriber, 4> logical_camera_subs;

@@ -3,6 +3,8 @@
 
 // ros
 #include <ros/ros.h>
+#include <tf2_ros/buffer.h>
+#include <tf2_ros/transform_listener.h>
 #include <std_msgs/String.h>
 #include <moveit/move_group_interface/move_group_interface.h>
 #include <sensor_msgs/JointState.h>
@@ -76,6 +78,9 @@ private:
     moveit::planning_interface::MoveGroupInterface arm_group_;
     sensor_msgs::JointState current_joint_states_;
     control_msgs::JointTrajectoryControllerState arm_controller_state_;
+
+    tf2_ros::Buffer tf_buffer;
+    tf2_ros::TransformListener tf_listener;
 
     nist_gear::VacuumGripperState gripper_state_;
     // gripper state subscriber

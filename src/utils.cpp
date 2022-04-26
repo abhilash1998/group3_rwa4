@@ -5,7 +5,6 @@
 
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/static_transform_broadcaster.h>
-#include <tf2_ros/transform_listener.h>
 
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Matrix3x3.h>
@@ -49,10 +48,8 @@ namespace utils
         );
     }
 
-    geometry_msgs::Pose transformToWorldFrame(std::string part_in_camera_frame)
+    geometry_msgs::Pose transformToWorldFrame(const std::string& part_in_camera_frame, tf2_ros::Buffer& tfBuffer)
     {
-        tf2_ros::Buffer tfBuffer;
-        tf2_ros::TransformListener tfListener(tfBuffer);
         ros::Rate rate(10);
         ros::Duration timeout(1.0);
 
@@ -85,6 +82,13 @@ namespace utils
         world_target.orientation.w = world_target_tf.transform.rotation.w;
 
         return world_target;
+    }
+
+    geometry_msgs::Pose transformToWorldFrame(const std::string& part_in_camera_frame)
+    {
+        tf2_ros::Buffer tfBuffer;
+        tf2_ros::TransformListener tfListener(tfBuffer);
+        return transformToWorldFrame(part_in_camera_frame, tfBuffer);
     }
 
     geometry_msgs::Pose transformToWorldFrame(const geometry_msgs::Pose& target, std::string agv)

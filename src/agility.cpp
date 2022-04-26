@@ -105,7 +105,6 @@ void AgilityChallenger::quality_control_sensor4_callback(const nist_gear::Logica
 }
 
 AgilityChallenger::AgilityChallenger(ros::NodeHandle* const nh) :
-    tf_listener(tf_buffer),
     pending_order_priority(0),
     in_sensor_blackout(false)
 {

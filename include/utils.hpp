@@ -7,6 +7,7 @@
 // standard library
 #include <string>
 #include <cstdint>
+#include <tf2_ros/transform_listener.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <array>
 
@@ -16,7 +17,8 @@ namespace utils
     bool contains(std::vector<T> vec, const T& elem);
 
     geometry_msgs::Pose transformToWorldFrame(const geometry_msgs::Pose& target,std::string agv);
-    geometry_msgs::Pose transformToWorldFrame(std::string part_in_camera_frame);
+    geometry_msgs::Pose transformToWorldFrame(const std::string& part_in_camera_frame, tf2_ros::Buffer& tfBuffer);
+    geometry_msgs::Pose transformToWorldFrame(const std::string& part_in_camera_frame);
     std::array<double, 3> eulerFromQuaternion(const geometry_msgs::Pose& pose);
     std::array<double, 3> eulerFromQuaternion(double x, double y, double z, double w);
     std::array<double, 3> eulerFromQuaternion(const tf2::Quaternion& quat);
