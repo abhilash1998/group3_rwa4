@@ -68,7 +68,7 @@ void AgilityChallenger::help_quality_control_sensor_callback(const nist_gear::Lo
         // We have the part already resolved in world frame, store its 3D
         // position in ppt
         bool found_part = false;
-        const geometry_msgs::Point ppt = part.second.position;
+        const geometry_msgs::Point ppt = std::get<2>(part).position;
         for (const nist_gear::Model model : new_results.models)
         {
             // Get this model in world frame, store its 3D position in mpt
@@ -98,7 +98,15 @@ void AgilityChallenger::help_quality_control_sensor_callback(const nist_gear::Lo
             // by the QC camera, meaning that either 1.) it was never faulty
             // and this confirmed that, or 2.) it was faulty but was removed
             // from the tray by the robot
-            ROS_INFO_STREAM("Removed part at [x:" << ppt.x << ",y:" << ppt.y << "] from faulty part verification queue");
+            ROS_INFO_STREAM("Removed '"
+                            << std::get<0>(part).type
+                            << "' of order '"
+                            << std::get<1>(part)
+                            << "' at [x:"
+                            << ppt.x
+                            << ",y:"
+                            << ppt.y
+                            << "] from faulty part verification queue");
         }
     }
     parts_for_fault_verification[agv_id] = new_list;
@@ -234,17 +242,27 @@ bool AgilityChallenger::is_sensor_blackout_active() const
     return in_sensor_blackout;
 }
 
-void AgilityChallenger::queue_for_fault_verification(const std::string& agv_id,
-                                                     const nist_gear::Product& product,
+void AgilityChallenger::queue_for_fault_verification(const nist_gear::Product& product,
+                                                     const std::string& order_id,
+                                                     const std::string& agv_id,
                                                      const geometry_msgs::Pose& objective_pose_in_world)
 {
     ROS_INFO_STREAM("Queueing part for fault verification: "
-                    << agv_id
+                    << order_id
                     << ", "
                     << product.type
                     << ", "
-                    << objective_pose_in_world);
-    parts_for_fault_verification[agv_id].push_back(std::make_pair(product, objective_pose_in_world));
+                    << agv_id
+                    << ", [x:"
+                    << objective_pose_in_world.position.x
+                    << ",y:"
+                    << objective_pose_in_world.position.y
+                    << "]");
+    parts_for_fault_verification[agv_id].push_back(std::make_tuple(
+        product,
+        order_id,
+        objective_pose_in_world
+    ));
 }
 
 bool AgilityChallenger::needs_fault_verification(const std::string& agv_id)
@@ -310,18 +328,22 @@ std::string AgilityChallenger::get_logical_camera_contents() const
     return str;
 }
 
-bool AgilityChallenger::get_agv_faulty_part(std::string& agv_id,
+bool AgilityChallenger::get_agv_faulty_part(const std::string& order_id,
+                                            std::string& agv_id,
                                             nist_gear::Product& product,
                                             geometry_msgs::Pose& pick_frame) const
 {
-    for (auto iter = parts_for_fault_verification.cbegin(); iter != parts_for_fault_verification.cend(); ++iter)
+    for (const auto& map_iter : parts_for_fault_verification)
     {
-        const std::vector<PartForFaultVerification> iter_parts = iter->second;
-        if (!iter_parts.empty())
+        for (const PartForFaultVerification& part : map_iter.second)
         {
-            agv_id = iter->first;
-            std::tie(product, pick_frame) = iter_parts.front();
-            return true;
+            if (std::get<1>(part) == order_id)
+            {
+                agv_id = map_iter.first;
+                product = std::get<0>(part);
+                pick_frame = std::get<2>(part);
+                return true;
+            }
         }
     }
     return false;

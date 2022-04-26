@@ -10,11 +10,12 @@
 #include <array>
 #include <vector>
 #include <unordered_map>
+#include <tuple>
 
 class AgilityChallenger
 {
 protected:
-    using PartForFaultVerification = std::pair<nist_gear::Product, geometry_msgs::Pose>;
+    using PartForFaultVerification = std::tuple<nist_gear::Product, std::string, geometry_msgs::Pose>;
 
     ros::Subscriber orders_subs;
     ros::Subscriber blackout_sub;
@@ -67,8 +68,9 @@ public:
     bool is_sensor_blackout_active() const;
 
     // 
-    void queue_for_fault_verification(const std::string& agv_id,
-                                      const nist_gear::Product& product,
+    void queue_for_fault_verification(const nist_gear::Product& product,
+                                      const std::string& order_id,
+                                      const std::string& agv_id,
                                       const geometry_msgs::Pose& objective_pose_in_world);
 
     // 
@@ -97,7 +99,8 @@ public:
     // overwritten with the pose of a faulty part resolved in world frame,
     // if false then this value is not overwritten
     // @return True if there is a faulty part, false otherwise.
-    bool get_agv_faulty_part(std::string& agv_id,
+    bool get_agv_faulty_part(const std::string& order_id,
+                             std::string& agv_id,
                              nist_gear::Product& product,
                              geometry_msgs::Pose& pick_frame) const;
 };
