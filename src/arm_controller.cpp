@@ -11,6 +11,7 @@
 #include "arm.hpp"
 
 #define NUM_AGVS 4
+std::vector<std::string> hit_list;
 
 using AriacAgvMap = std::unordered_map<std::string, std::shared_ptr<AriacAgv>>;
 
@@ -68,6 +69,7 @@ namespace {
                         << order_priority);
 
         int counter = 0;
+        
         // parse each kitting shipment
         for (const auto& ks : kitting_shipments)
         {
@@ -111,11 +113,43 @@ namespace {
                 std::tie(product, bin_indices) = product_location_pairs[product_idx];
 
                 // Even if we did not increment product_idx, increment counter
-                counter++;
+                // counter++;
 
                 for (auto iter = bin_indices.cbegin(); iter != bin_indices.cend(); ++iter)
                 {
-                    const std::string part_frame = build_part_frame(product.type, *iter, counter);
+                    // const std::string part_frame = build_part_frame(product.type, *iter, counter);
+                    
+                    std::string part_frame;
+                    for (counter = 1; counter <= 12; counter++)
+                    {
+                        bool hit = false;
+                        part_frame = build_part_frame(product.type, *iter, counter);
+                        if (does_frame_exist(part_frame, 0.5))
+                        {
+                            if (hit_list.empty())
+                            {   
+                                // ROS_INFO_STREAM("Hit List Updated");
+                                hit_list.emplace_back(product.type + std::to_string(counter));
+                            }
+                            else
+                            {
+                                for (auto s : hit_list)
+                                {
+                                    if(s.compare(product.type + std::to_string(counter)) == 0)
+                                    {
+                                        hit = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (hit) {continue;}
+                            else 
+                            {
+                                hit_list.emplace_back(product.type + std::to_string(counter));
+                                break;
+                            }
+                        }
+                    }
                     if (!does_frame_exist(part_frame, 0.5))
                     {
                         continue;
@@ -136,13 +170,14 @@ namespace {
                         // TODO: tweak all the stops/sleeps?
                         ROS_WARN_STREAM("Placed part is faulty!");
                         arm->goToPresetLocation(ks.agv_id);
-                        if (arm->pickPart(product.type, faulty_part_pick_frame))
+                        if (arm->pickPart(product.type, faulty_part_pick_frame, 1))
                         {
-                            ros::Duration(2.0).sleep();
+                            // ros::Duration(2.0).sleep();
                             arm->goToPresetLocation(ks.agv_id);
                             arm->goToPresetLocation("home2");
                             ros::Duration(0.5).sleep();
                             arm->deactivateGripper();
+                            iter--;
                         }
                         else
                         {
