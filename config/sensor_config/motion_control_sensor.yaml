@@ -49,6 +49,12 @@ sensors:
       xyz: [-12.26217, -2.963994, 2.285697]
       rpy: [3.141593, 1.570792, 0.000000]
 
+  laser_profiler_0:
+    type: laser_profiler
+    pose:
+      xyz: [-0.57, 4.16, 1.45]
+      rpy: [1.570792, 1.570792, 0]
+
 robot_camera:
   enable: true
 
