@@ -400,21 +400,21 @@ int main(int argc, char **argv)
     ros::Duration rate(0.1);
     while (ros::ok())
     {
-        current_order_priority = agility.consume_pending_order(current_order);
-        if (0 != current_order_priority)
-        {
-            cater_order(
-                agv_map,
-                &agility,
-                &arm,
-                current_order_priority,
-                current_order
-            );
-        }
-        else
-        {
+//        current_order_priority = agility.consume_pending_order(current_order);
+//        if (0 != current_order_priority)
+//        {
+//            cater_order(
+//                agv_map,
+//                &agility,
+//                &arm,
+//                current_order_priority,
+//                current_order
+//            );
+//        }
+//        else
+//        {
             rate.sleep();
-        }
+//        }
     }
 
     return 0;
