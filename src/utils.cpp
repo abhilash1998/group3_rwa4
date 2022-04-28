@@ -105,6 +105,14 @@ namespace utils
             kit_tray = "kit_tray_3";
         else if (agv.compare("agv4") == 0)
             kit_tray = "kit_tray_4";
+        else if (agv.compare("as1") == 0)
+            kit_tray = "briefcase_1";
+        else if (agv.compare("as2") == 0)
+            kit_tray = "briefcase_2";
+        else if (agv.compare("as3") == 0)
+            kit_tray = "briefcase_3";
+        else if (agv.compare("as4") == 0)
+            kit_tray = "briefcase_4";
 
         transformStamped.header.stamp = ros::Time::now();
         transformStamped.header.frame_id = kit_tray;

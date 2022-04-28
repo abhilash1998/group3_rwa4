@@ -42,6 +42,19 @@ void AgilityChallenger::help_logical_camera_image_callback(const nist_gear::Logi
     }
 }
 
+void AgilityChallenger::help_logical_camera_as1_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg, const int bin_idx)
+{
+    // Clear the list of parts that this camera currently sees, and repopulate
+    // it with updated data
+    // Notice the vector is a reference
+    std::vector<std::string>& current_parts_bin_idx = current_detected_parts_as1[bin_idx];
+    current_parts_bin_idx.clear();
+    for (auto iter_model = msg->models.begin(); iter_model != msg->models.end(); ++iter_model)
+    {
+        current_parts_bin_idx.push_back(iter_model->type);
+    }
+}
+
 void AgilityChallenger::help_quality_control_sensor_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg, const int lc_idx)
 {
     const nist_gear::LogicalCameraImage new_results = *msg;
@@ -112,6 +125,18 @@ void AgilityChallenger::help_quality_control_sensor_callback(const nist_gear::Lo
     parts_for_fault_verification[agv_id] = new_list;
 }
 
+void AgilityChallenger::logical_camera_as11_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg)
+{
+    // Callback for bin #1 with index 0
+    help_logical_camera_as1_callback(msg, 0);
+}
+
+void AgilityChallenger::logical_camera_as12_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg)
+{
+    // Callback for bin #1 with index 0
+    help_logical_camera_as1_callback(msg, 1);
+}
+
 void AgilityChallenger::logical_camera_image1_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg)
 {
     // Callback for bin #1 with index 0
@@ -174,6 +199,18 @@ AgilityChallenger::AgilityChallenger(ros::NodeHandle* const nh) :
         "/group3/blackout_active",
         1,
         &AgilityChallenger::blackout_status_callback,
+        this
+    );
+    logical_camera_as1[0] = nh->subscribe<nist_gear::LogicalCameraImage>(
+        "/ariac/logical_camera_9",
+        1,
+        &AgilityChallenger::logical_camera_as11_callback,
+        this
+    );
+    logical_camera_as1[1] = nh->subscribe<nist_gear::LogicalCameraImage>(
+        "/ariac/logical_camera_10",
+        1,
+        &AgilityChallenger::logical_camera_as12_callback,
         this
     );
     logical_camera_subs[0] = nh->subscribe<nist_gear::LogicalCameraImage>(
@@ -297,6 +334,20 @@ std::vector<int> AgilityChallenger::get_camera_indices_of(const std::string& pro
         if (lcd.cend() != std::find(lcd.cbegin(), lcd.cend(), product_type))
         {
             indices.push_back(i+1);
+        }
+    }
+    return indices;
+}
+
+std::vector<int> AgilityChallenger::get_as1_indices_of(const std::string& product_type) const
+{
+    std::vector<int> indices;
+    for (int i = 0; i < current_detected_parts_as1.size(); i++)
+    {
+        const std::vector<std::string>& lcd = current_detected_parts_as1[i];
+        if (lcd.cend() != std::find(lcd.cbegin(), lcd.cend(), product_type))
+        {
+            indices.push_back(i+9);
         }
     }
     return indices;

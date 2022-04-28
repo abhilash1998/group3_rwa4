@@ -34,7 +34,7 @@
           $(arg load_moveit_args)
           $(arg fill_demo_shipment_args)
           $(arg visualize_sensors_args)
-          -f $(find group3_rwa4)/config/trial_config/rwa3.yaml
+          -f $(find group3_rwa4)/config/trial_config/rwa0.yaml
           $(find group3_rwa4)/config/sensor_config/motion_control_sensor.yaml
           " required="true" output="screen" />
 
@@ -49,5 +49,7 @@
       <arg name="rviz_config" value="$(find group3_rwa3)/rviz/arm_moveit.rviz" />
     </include>
   </group> -->
+
+
 
 </launch>

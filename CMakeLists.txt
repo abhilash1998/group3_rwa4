@@ -38,6 +38,9 @@ include_directories(
 add_executable(arm_controller src/arm.cpp src/ariac_agv.cpp src/agility.cpp src/utils.cpp src/arm_controller.cpp)
 target_link_libraries(arm_controller ${catkin_LIBRARIES})
 
+add_executable(gantry_controller src/ariac_agv.cpp src/agility.cpp src/utils.cpp src/gantry_controller.cpp src/gantry.cpp)
+target_link_libraries(gantry_controller ${catkin_LIBRARIES})
+
 add_executable(blackout_controller src/blackout.cpp src/blackout_controller.cpp)
 target_link_libraries(blackout_controller ${catkin_LIBRARIES})
 

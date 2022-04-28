@@ -73,7 +73,7 @@ orders:
             rpy: [0, 0, '-pi/3']
 
 models_over_bins:
-  bin2:
+  bin1:
     models:
       assembly_sensor_red:
         xyz_start: [0.2, 0.2, 0.0]
@@ -81,7 +81,7 @@ models_over_bins:
         rpy: [0, 0, 0]
         num_models_x: 2
         num_models_y: 2
-  bin1:
+  bin2:
     models:
       assembly_battery_blue:
         xyz_start: [0.2, 0.2, 0.0]
@@ -100,7 +100,7 @@ models_over_bins:
 
 sensor_blackout:
   product_count: 1
-  duration: 90
+  duration: 30
 
 faulty_products:
   - assembly_battery_blue_2

@@ -48,11 +48,11 @@ namespace {
 
     void cater_higher_priority_order_if_necessary(const AriacAgvMap& agv_map,
                                                   AgilityChallenger* const agility,
-                                                  Arm* const arm,
+                                                  Gantry* const arm,
                                                   const int current_order_priority);
 
     void cater_faulty_parts(AgilityChallenger* const agility,
-                            Arm* const arm,
+                            Gantry* const arm,
                             const std::string& order_id,
                             std::vector<nist_gear::Product>& products)
     {
@@ -92,32 +92,32 @@ namespace {
         }
     }
 
-    void cater_kitting_shipments(const AriacAgvMap& agv_map,
+    void cater_assembly_shipments(const AriacAgvMap& agv_map,
                                  AgilityChallenger* const agility,
-                                 Arm* const arm,
+                                 Gantry* const arm,
                                  const int order_priority,
                                  const std::string& order_id,
-                                 std::vector<nist_gear::KittingShipment>& kitting_shipments)
+                                 std::vector<nist_gear::AssemblyShipment>& assembly_shipments)
     {
-        // Ignore request if there are no kitting shipments
-        if (kitting_shipments.empty())
+        // Ignore request if there are no assembly shipments
+        if (assembly_shipments.empty())
         {
             return;
         }
 
         ROS_INFO_STREAM("Catering "
-                        << kitting_shipments.size()
-                        << " kitting shipments from order with priority of "
+                        << assembly_shipments.size()
+                        << " assembly shipments from order with priority of "
                         << order_priority);
 
         int counter = 0;
-        // parse each kitting shipment
-        for (const auto& ks : kitting_shipments)
+        // parse each assembly shipment
+        for (const auto& as : assembly_shipments)
         {
-            std::vector<nist_gear::Product> products = ks.products;
+            std::vector<nist_gear::Product> products = as.products;
             if (products.empty())
             {
-                ROS_FATAL_STREAM("Kitting shipment had no products?");
+                ROS_FATAL_STREAM("Assembly shipment had no products?");
                 ros::shutdown();
                 return;
             }
@@ -136,7 +136,7 @@ namespace {
                                 << " remaining afterwards");
 
                 // Get the bins in which this part appears
-                const std::vector<int> bin_indices = agility->get_camera_indices_of(product.type);
+                const std::vector<int> bin_indices = agility->get_as1_indices_of(product.type);
                 if (bin_indices.empty())
                 {
                     ROS_FATAL_STREAM(
@@ -148,6 +148,7 @@ namespace {
                     // ros::shutdown();
                     // return;
                 }
+                // ROS_ERROR_STREAM(bin_indices.first);
 
                 // counter++;
 
@@ -190,32 +191,32 @@ namespace {
                     }
 
                     // Move the part from where it is to the AGV bed
-                    ROS_INFO_STREAM("Moving part '" << product.type << "' to '" << ks.agv_id << "' (" << part_frame << ")");
-                    arm->movePart(product.type, part_frame, product.pose, ks.agv_id);
-                    ROS_INFO_STREAM("Placed part '" << product.type << "' at '" << ks.agv_id << "'");
-                    agility->queue_for_fault_verification(
-                        product,
-                        order_id,
-                        ks.agv_id,
-                        arm->transform_to_world_frame(product.pose, ks.agv_id)
-                    );
+                    ROS_INFO_STREAM("Moving part '" << product.type << "' to '" << as.station_id << "' (" << part_frame << ")");
+                    arm->movePart(product.type, part_frame, product.pose, as.station_id);
+                    ROS_INFO_STREAM("Placed part '" << product.type << "' at '" << as.station_id << "'");
+                    // agility->queue_for_fault_verification(
+                    //     product,
+                    //     order_id,
+                    //     as.station_id,
+                    //     arm->transform_to_world_frame(product.pose, as.agv_id)
+                    // );
                     ros::Duration(0.2).sleep();
 
                     // Give an opportunity for higher priority orders
                     cater_higher_priority_order_if_necessary(agv_map, agility, arm, order_priority);
 
                     // If there is no sensor blackout, check for faulty parts
-                    if (!agility->is_sensor_blackout_active())
-                    {
-                        // After checking, give an opportunity for higher
-                        // priority orders
-                        cater_faulty_parts(agility, arm, order_id, products);
-                        cater_higher_priority_order_if_necessary(agv_map, agility, arm, order_priority);
-                    }
-                    else
-                    {
-                         ROS_ERROR_STREAM("SENSOR BLCKOUT");
-                    }
+                    // if (!agility->is_sensor_blackout_active())
+                    // {
+                    //     // After checking, give an opportunity for higher
+                    //     // priority orders
+                    //     cater_faulty_parts(agility, arm, order_id, products);
+                    //     cater_higher_priority_order_if_necessary(agv_map, agility, arm, order_priority);
+                    // }
+                    // else
+                    // {
+                    //      ROS_ERROR_STREAM("SENSOR BLCKOUT");
+                    // }
 
                     // It may be faulty, but we placed the part. Whether it was
                     // already declared faulty and moved, or there was a sensor
@@ -227,72 +228,72 @@ namespace {
                 // need verification for faults, wait here until the sensor
                 // blackout is done, then cater them. If any of them are
                 // faulty, it'll add the product back into the products vector.
-                if (products.empty() && agility->needs_fault_verification(ks.agv_id))
-                {
-                    ROS_INFO_STREAM("Waiting for sensor blackout to finish...");
-                    do {
-                        static ros::Duration d(0.1);
-                        d.sleep();
-                    } while (agility->needs_fault_verification(ks.agv_id));
+                // if (products.empty() && agility->needs_fault_verification(as.agv_id))
+                // {
+                //     ROS_INFO_STREAM("Waiting for sensor blackout to finish...");
+                //     do {
+                //         static ros::Duration d(0.1);
+                //         d.sleep();
+                //     } while (agility->needs_fault_verification(as.agv_id));
 
-                    cater_faulty_parts(agility, arm, order_id, products);
+                //     cater_faulty_parts(agility, arm, order_id, products);
 
-                    // If products were added back, first give an opportunity
-                    // for higher priority orders before resuming
-                    if (!products.empty())
-                    {
-                        cater_higher_priority_order_if_necessary(agv_map, agility, arm, order_priority);
-                    }
-                }
+                //     // If products were added back, first give an opportunity
+                //     // for higher priority orders before resuming
+                //     if (!products.empty())
+                //     {
+                //         cater_higher_priority_order_if_necessary(agv_map, agility, arm, order_priority);
+                //     }
+                // }
             }
 
             // If we're here, we have placed all products in this shipment
-            ros::Duration(1.0).sleep();
-            const auto agv_iter = agv_map.find(ks.agv_id);
-            if (agv_map.cend() != agv_iter)
-            {
-                const std::shared_ptr<AriacAgv> agv = agv_iter->second;
-                if (agv->is_ready_to_deliver())
-                {
-                    agv->submit_shipment(
-                        ks.station_id,
-                        ks.shipment_type
-                    );
-                    ROS_INFO_STREAM("Submitted AGV with ID " << ks.agv_id);
-                }
-                else
-                {
-                    ROS_ERROR_STREAM("AGV with ID " << ks.agv_id << " is not ready to ship");
-                }
-            }
-            else
-            {
-                ROS_FATAL_STREAM("Unknown AGV with ID " << ks.agv_id);
-                ros::shutdown();
-                return;
-            }
+            // ros::Duration(1.0).sleep();
+            // const auto agv_iter = agv_map.find(as.agv_id);
+            // if (agv_map.cend() != agv_iter)
+            // {
+            //     const std::shared_ptr<AriacAgv> agv = agv_iter->second;
+            //     if (agv->is_ready_to_deliver())
+            //     {
+            //         agv->submit_shipment(
+            //             as.station_id,
+            //             as.shipment_type
+            //         );
+            //         ROS_INFO_STREAM("Submitted AGV with ID " << as.agv_id);
+            //     }
+            //     else
+            //     {
+            //         ROS_ERROR_STREAM("AGV with ID " << as.agv_id << " is not ready to ship");
+            //     }
+            // }
+            // else
+            // {
+            //     ROS_FATAL_STREAM("Unknown AGV with ID " << as.agv_id);
+            //     ros::shutdown();
+            //     return;
+            // }
         }
     }
 
     void cater_order(const AriacAgvMap& agv_map,
                      AgilityChallenger* const agility,
-                     Arm* const arm,
+                     Gantry* const arm,
                      const int order_priority,
                      nist_gear::Order& order)
     {
-        cater_kitting_shipments(
+        cater_assembly_shipments(
             agv_map,
             agility,
             arm,
             order_priority,
             order.order_id,
-            order.kitting_shipments
+            order.assembly_shipments
         );
     }
 
     void cater_higher_priority_order_if_necessary(const AriacAgvMap& agv_map,
                                                   AgilityChallenger* const agility,
-                                                  Arm* const arm,
+                                                  Gantry* const arm,
                                                   const int current_order_priority)
     {
         if (agility->higher_priority_order_requested(current_order_priority))
@@ -309,7 +310,7 @@ namespace {
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "arm_controller");
+    ros::init(argc, argv, "gantry_controller");
     ros::NodeHandle nh;
 
     // Create interfaces to each of the AGVs
@@ -326,7 +327,7 @@ int main(int argc, char **argv)
     spinner.start();
 
     AgilityChallenger agility(&nh);
-    Arm arm;
+    Gantry arm;
 
     //
     // Start the competition
@@ -394,7 +395,7 @@ int main(int argc, char **argv)
     //
 
     arm.goToPresetLocation("home1");
-    arm.goToPresetLocation("home2");
+    // arm.goToPresetLocation("home2");
 
     int current_order_priority;
     nist_gear::Order current_order;
