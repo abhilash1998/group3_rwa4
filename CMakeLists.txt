@@ -25,10 +25,24 @@ find_package(catkin REQUIRED COMPONENTS
   moveit_ros_planning
   moveit_ros_planning_interface
   moveit_visual_tools
+  message_generation
 )
 find_package(Eigen3 REQUIRED)
 
-catkin_package()
+add_service_files(
+  DIRECTORY srv
+  FILES GetConveyorBeltPartPickPose.srv
+)
+
+generate_messages(
+  DEPENDENCIES
+  geometry_msgs
+)
+
+catkin_package(
+  CATKIN_DEPENDS
+  message_runtime
+)
 
 include_directories(
   include
