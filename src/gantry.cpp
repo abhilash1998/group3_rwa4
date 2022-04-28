@@ -397,7 +397,7 @@ Gantry::Gantry() :
             target_pose_in_world.orientation.y = q_rslt.y();
             target_pose_in_world.orientation.z = q_rslt.z();
             target_pose_in_world.orientation.w = q_rslt.w();
-            target_pose_in_world.position.z += 0.15;
+            target_pose_in_world.position.z += 0.10;
 
             gantry_arm_group_.setMaxVelocityScalingFactor(0.1);
             gantry_arm_group_.setPoseTarget(target_pose_in_world);

@@ -54,7 +54,7 @@ orders:
           type: assembly_battery_green
           pose:
             xyz: [-0.032465, 0.174845, 0.15]
-            rpy: [0, 0, 0]
+            rpy: [0, 0, 'pi']
         part_1:
           type: assembly_pump_blue
           pose:

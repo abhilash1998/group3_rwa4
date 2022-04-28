@@ -61,25 +61,25 @@ sensors:
       xyz: [-5.4, 1.361367, 1.50]
       rpy: [3.141593, 1.570792, 0.000000]
 
-  logical_camera_11:  #as3_1
+  logical_camera_13:  #as3_1
     type: logical_camera
     pose:
       xyz: [-5.4, -1.325227, 1.50]
       rpy: [3.141593, 1.570792, 0.000000]
 
-  logical_camera_12: #logical_camera_as3_2
+  logical_camera_14: #logical_camera_as3_2
     type: logical_camera
     pose:
       xyz: [-5.4, -4.698129, 1.50]
       rpy: [3.141593, 1.570792, 0.000000]
 
-  logical_camera_13: #logical_camera_as2_1
+  logical_camera_11: #logical_camera_as2_1
     type: logical_camera
     pose:
       xyz: [-10.4, 4.702724, 1.50]
       rpy: [3.141593, 1.570792, 0.000000]
 
-  logical_camera_14: #logical_camera_as2_2
+  logical_camera_12: #logical_camera_as2_2
     type: logical_camera
     pose:
       xyz: [-10.4, 1.361367, 1.50]

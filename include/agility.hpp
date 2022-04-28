@@ -40,7 +40,7 @@ protected:
 
     // The parts currently detected by the logical cameras
     std::array<std::vector<std::string>, 4> current_detected_parts;
-    std::array<std::vector<std::string>, 2> current_detected_parts_as1;
+    std::array<std::vector<std::string>, 8> current_detected_parts_as1;
 
     // True if a sensor blackout was detected right now, false otherwise
     bool in_sensor_blackout;
@@ -54,7 +54,7 @@ protected:
     std::array<nist_gear::LogicalCameraImage, 4> current_qc_results;
 
     void help_logical_camera_image_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg, const int bin_idx);
-    void help_logical_camera_as1_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg, const int bin_idx);
+    void help_logical_camera_as_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg, const int bin_idx);
     void help_quality_control_sensor_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg, const int lc_idx);
 
     void annouce_world_tf(const std::string part_name, const std::string frame);
@@ -66,6 +66,12 @@ protected:
     void logical_camera_image4_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg);
     void logical_camera_as11_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg);
     void logical_camera_as12_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg);
+    void logical_camera_as21_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg);
+    void logical_camera_as22_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg);
+    void logical_camera_as31_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg);
+    void logical_camera_as32_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg);
+    void logical_camera_as41_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg);
+    void logical_camera_as42_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg);
     void quality_control_sensor1_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg);
     void quality_control_sensor2_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg);
     void quality_control_sensor3_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg);

@@ -115,6 +115,29 @@ namespace {
 
                 for (auto iter = bin_indices.cbegin(); iter != bin_indices.cend(); ++iter)
                 {
+                    bool item_ready = false;
+                    if( as.station_id.compare("as1")==0 && ( *iter == 9 or *iter == 10 ) )
+                    {
+                        item_ready = true;
+                    }
+                    else if( as.station_id.compare("as2")==0 && ( *iter == 11 or *iter == 12 ) )
+                    {
+                        item_ready = true;
+                    }
+                    else if( as.station_id.compare("as3")==0 && ( *iter == 13 or *iter == 14 ) )
+                    {
+                        item_ready = true;
+                    }
+                    else if( as.station_id.compare("as4")==0 && ( *iter == 15 or *iter == 16 ) )
+                    {
+                        item_ready = true;
+                    }
+                    
+                    if(!item_ready)
+                    {
+                        continue;
+                    }
+
                     std::string part_frame;
                     for (counter = 1; counter <= 12; counter++)
                     {
@@ -317,6 +340,6 @@ int main(int argc, char **argv)
             rate.sleep();
         }
     }
-
+    
     return 0;
 }

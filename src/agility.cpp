@@ -42,7 +42,7 @@ void AgilityChallenger::help_logical_camera_image_callback(const nist_gear::Logi
     }
 }
 
-void AgilityChallenger::help_logical_camera_as1_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg, const int bin_idx)
+void AgilityChallenger::help_logical_camera_as_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg, const int bin_idx)
 {
     // Clear the list of parts that this camera currently sees, and repopulate
     // it with updated data
@@ -128,13 +128,47 @@ void AgilityChallenger::help_quality_control_sensor_callback(const nist_gear::Lo
 void AgilityChallenger::logical_camera_as11_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg)
 {
     // Callback for bin #1 with index 0
-    help_logical_camera_as1_callback(msg, 0);
+    help_logical_camera_as_callback(msg, 0);
 }
 
 void AgilityChallenger::logical_camera_as12_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg)
 {
     // Callback for bin #1 with index 0
-    help_logical_camera_as1_callback(msg, 1);
+    help_logical_camera_as_callback(msg, 1);
+}
+void AgilityChallenger::logical_camera_as21_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg)
+{
+    // Callback for bin #1 with index 0
+    help_logical_camera_as_callback(msg, 2);
+}
+
+void AgilityChallenger::logical_camera_as22_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg)
+{
+    // Callback for bin #1 with index 0
+    help_logical_camera_as_callback(msg, 3);
+}
+
+void AgilityChallenger::logical_camera_as31_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg)
+{
+    // Callback for bin #1 with index 0
+    help_logical_camera_as_callback(msg, 4);
+}
+
+void AgilityChallenger::logical_camera_as32_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg)
+{
+    // Callback for bin #1 with index 0
+    help_logical_camera_as_callback(msg, 5);
+}
+void AgilityChallenger::logical_camera_as41_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg)
+{
+    // Callback for bin #1 with index 0
+    help_logical_camera_as_callback(msg, 6);
+}
+
+void AgilityChallenger::logical_camera_as42_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg)
+{
+    // Callback for bin #1 with index 0
+    help_logical_camera_as_callback(msg, 7);
 }
 
 void AgilityChallenger::logical_camera_image1_callback(const nist_gear::LogicalCameraImage::ConstPtr& msg)
@@ -211,6 +245,42 @@ AgilityChallenger::AgilityChallenger(ros::NodeHandle* const nh) :
         "/ariac/logical_camera_10",
         1,
         &AgilityChallenger::logical_camera_as12_callback,
+        this
+    );
+    logical_camera_as2[0] = nh->subscribe<nist_gear::LogicalCameraImage>(
+        "/ariac/logical_camera_11",
+        1,
+        &AgilityChallenger::logical_camera_as21_callback,
+        this
+    );
+    logical_camera_as2[1] = nh->subscribe<nist_gear::LogicalCameraImage>(
+        "/ariac/logical_camera_12",
+        1,
+        &AgilityChallenger::logical_camera_as22_callback,
+        this
+    );
+    logical_camera_as3[0] = nh->subscribe<nist_gear::LogicalCameraImage>(
+        "/ariac/logical_camera_13",
+        1,
+        &AgilityChallenger::logical_camera_as31_callback,
+        this
+    );
+    logical_camera_as3[1] = nh->subscribe<nist_gear::LogicalCameraImage>(
+        "/ariac/logical_camera_14",
+        1,
+        &AgilityChallenger::logical_camera_as32_callback,
+        this
+    );
+    logical_camera_as4[0] = nh->subscribe<nist_gear::LogicalCameraImage>(
+        "/ariac/logical_camera_15",
+        1,
+        &AgilityChallenger::logical_camera_as41_callback,
+        this
+    );
+    logical_camera_as4[1] = nh->subscribe<nist_gear::LogicalCameraImage>(
+        "/ariac/logical_camera_16",
+        1,
+        &AgilityChallenger::logical_camera_as42_callback,
         this
     );
     logical_camera_subs[0] = nh->subscribe<nist_gear::LogicalCameraImage>(
