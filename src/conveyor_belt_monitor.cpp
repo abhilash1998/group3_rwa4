@@ -21,11 +21,15 @@ ConveyorBeltPart::ConveyorBeltPart(const ros::Time& time, const geometry_msgs::P
 ConveyorBeltPart::~ConveyorBeltPart()
 {
 }
-geometry_msgs::Pose ConveyorBeltPart::get_current_estimated_pose() const
+geometry_msgs::Pose ConveyorBeltPart::get_estimated_pose(const double dt) const
 {
     geometry_msgs::Pose adjusted = pick_pose_at_detection;
-    adjusted.position.y -= (BELT_SPEED_MPS * (ros::Time::now() - time_of_detection).toSec());
+    adjusted.position.y -= (BELT_SPEED_MPS * (ros::Time::now() + ros::Duration(dt) - time_of_detection).toSec());
     return adjusted;
+}
+bool ConveyorBeltPart::is_part_on_belt(const double dt) const
+{
+    return ros::Time::now() + ros::Duration(dt) - time_of_detection < DURATION_ON_BELT;
 }
 
 void ConveyorBeltMonitor::sensor_callback(const sensor_msgs::LaserScan::ConstPtr& msg)
@@ -92,15 +96,14 @@ void ConveyorBeltMonitor::expire_parts_callback(const ros::TimerEvent& evt)
     current_parts.clear();
     for (const ConveyorBeltPart& part : old_parts)
     {
-        // If the duration between now and when this part was detected is less
-        // than the amount of time a part spends on the belt, keep it
-        if (time_now - part.time_of_detection < DURATION_ON_BELT)
+        // Keep this part if it's still on the belt
+        if (part.is_part_on_belt())
         {
             current_parts.push_back(part);
             ROS_INFO_STREAM("Part at y = "
                             << part.pick_pose_at_detection.position.y
                             << " => "
-                            << part.get_current_estimated_pose().position.y);
+                            << part.get_estimated_pose().position.y);
         }
     }
 
@@ -114,6 +117,28 @@ void ConveyorBeltMonitor::expire_parts_callback(const ros::TimerEvent& evt)
     }
 }
 
+bool ConveyorBeltMonitor::handle_get_part_pick_pose(
+    group3_rwa4::GetConveyorBeltPartPickPose::Request &req,
+    group3_rwa4::GetConveyorBeltPartPickPose::Response &res)
+{
+    // Prove this otherwise
+    res.part_available = false;
+
+    // Loop forward, since the list is ordered from "older" parts to younger,
+    // we want to get the oldest part possible
+    for (const ConveyorBeltPart& part : current_parts)
+    {
+        if (part.is_part_on_belt(req.dt))
+        {
+            res.pick_pose = part.get_estimated_pose(req.dt);
+            res.part_available = true;
+            break;
+        }
+    }
+
+    return true;
+}
+
 ConveyorBeltMonitor::ConveyorBeltMonitor(ros::NodeHandle* const nh) :
     tf_listener(tf_buffer),
     profiling_active(false),
@@ -123,6 +148,11 @@ ConveyorBeltMonitor::ConveyorBeltMonitor(ros::NodeHandle* const nh) :
         "/ariac/laser_profiler_0",
         1,
         &ConveyorBeltMonitor::sensor_callback,
+        this
+    );
+    get_part_pick_pose_srv = nh->advertiseService(
+        "/group3/get_conveyor_belt_part_pick_pose",
+        &ConveyorBeltMonitor::handle_get_part_pick_pose,
         this
     );
     expire_parts_tmr = nh->createTimer(

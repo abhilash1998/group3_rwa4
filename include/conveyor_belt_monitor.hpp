@@ -1,6 +1,8 @@
 #include <ros/subscriber.h>
 #include <ros/timer.h>
 
+#include <group3_rwa4/GetConveyorBeltPartPickPose.h>
+
 #include <geometry_msgs/Pose.h>
 #include <sensor_msgs/LaserScan.h>
 #include <tf2_ros/buffer.h>
@@ -27,10 +29,19 @@ public:
     // Destructor
     ~ConveyorBeltPart();
 
-    // Given a lapse in time, get the current estimated pose of the part
-    // (assuming the part is still on the belt, this does not confirm this).
+    // Given a lapse in time, get the estimated pose of the part a specified
+    // number of seconds in the future.
+    // @param dt The number of seconds in the future, defaults to 0.0 (now) if
+    // unspecified.
     // @return The estimated pose of this part resolved in world frame
-    geometry_msgs::Pose get_current_estimated_pose() const;
+    geometry_msgs::Pose get_estimated_pose(const double dt=0.0) const;
+
+    // Get whether or not this part will still be on the belt a specified
+    // number of seconds in the future.
+    // @param dt The number of seconds in the future, defaults to 0.0 (now) if
+    // unspecified.
+    // @param True if the part is / will be, false otherwise.
+    bool is_part_on_belt(const double dt=0.0) const;
 };
 
 // A list of conveyor belt parts
@@ -47,6 +58,9 @@ protected:
 
     // Subscriber to the sensor data that describes the detected parts
     ros::Subscriber sensor_sub;
+    // The server for the service which collects a pick point for a conveyor
+    // belt part
+    ros::ServiceServer get_part_pick_pose_srv;
     // A timer used to periodically reevaluate if the parts are still valid
     ros::Timer expire_parts_tmr;
 
@@ -65,6 +79,15 @@ protected:
     // Callback for the reevaluation timer being triggered
     // @param evt The timer event
     void expire_parts_callback(const ros::TimerEvent& evt);
+
+    // Service callback to handle requests to get a pick pose for a part on the
+    // conveyor belt.
+    // @param req The service request
+    // @param res The service response
+    // @return True
+    bool handle_get_part_pick_pose(
+        group3_rwa4::GetConveyorBeltPartPickPose::Request &req,
+        group3_rwa4::GetConveyorBeltPartPickPose::Response &res);
 
     // Helper function to get the pose of the sensor
     // @param pose Overwritten with the pose if this method returns true
