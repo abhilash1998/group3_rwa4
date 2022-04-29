@@ -44,6 +44,10 @@ target_link_libraries(gantry_controller ${catkin_LIBRARIES})
 add_executable(blackout_controller src/blackout.cpp src/blackout_controller.cpp)
 target_link_libraries(blackout_controller ${catkin_LIBRARIES})
 
+add_executable(obstacle_controller src/obstacle_controller.cpp)
+target_link_libraries(obstacle_controller ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+
+
 install(DIRECTORY include
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )

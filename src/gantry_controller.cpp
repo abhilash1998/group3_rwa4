@@ -6,6 +6,14 @@
 #include <memory>
 #include <unordered_map>
 
+#include <moveit/move_group_interface/move_group_interface.h>
+#include <moveit/planning_scene_interface/planning_scene_interface.h>
+#include <moveit_msgs/DisplayRobotState.h>
+#include <moveit_msgs/DisplayTrajectory.h>
+#include <moveit_msgs/AttachedCollisionObject.h>
+#include <moveit_msgs/CollisionObject.h>
+#include <moveit_visual_tools/moveit_visual_tools.h>
+
 #include "agility.hpp"
 #include "ariac_agv.hpp"
 #include "arm.hpp"
@@ -230,11 +238,81 @@ namespace {
     }
 }
 
+void add_objects(ros::NodeHandle* const nh)
+{
+    ros::Publisher planning_scene_diff_publisher = nh->advertise<moveit_msgs::PlanningScene>("/ariac/gantry/planning_scene", 1);
+    ros::WallDuration sleep_t(0.5);
+    while (planning_scene_diff_publisher.getNumSubscribers() < 1) {
+        sleep_t.sleep();
+    }
+    // Now let's define a collision object ROS message for the robot to avoid.
+    moveit_msgs::PlanningScene planning_scene;
+    moveit_msgs::CollisionObject collision_object;
+    shape_msgs::SolidPrimitive primitive;
+    geometry_msgs::Pose box_pose;
+
+    // AS1
+    collision_object.header.frame_id = "world";
+    collision_object.id = "as1";
+    primitive.type = primitive.BOX;
+    primitive.dimensions.resize(3);
+    primitive.dimensions[primitive.BOX_X] = 1.2;
+    primitive.dimensions[primitive.BOX_Y] = 1.2;
+    primitive.dimensions[primitive.BOX_Z] = 1.2;  //agv = 1.5 //as = 1.2
+    box_pose.orientation.w = 1.0;
+    box_pose.position.x = -7.3; //-12.3
+    box_pose.position.y = 3.0;  //3 -3
+    box_pose.position.z = 0;
+    collision_object.primitives.push_back(primitive);
+    collision_object.primitive_poses.push_back(box_pose);
+    collision_object.operation = collision_object.ADD;
+    planning_scene.world.collision_objects.push_back(collision_object);
+
+    // AS1
+    collision_object.header.frame_id = "world";
+    collision_object.id = "as1";
+    primitive.type = primitive.BOX;
+    primitive.dimensions.resize(3);
+    primitive.dimensions[primitive.BOX_X] = 1.2;
+    primitive.dimensions[primitive.BOX_Y] = 1.2;
+    primitive.dimensions[primitive.BOX_Z] = 1.2;  //agv = 1.5 //as = 1.2
+    box_pose.orientation.w = 1.0;
+    box_pose.position.x = -7.3; //-12.3
+    box_pose.position.y = 3.0;  //3 -3
+    box_pose.position.z = 0;
+    collision_object.primitives.push_back(primitive);
+    collision_object.primitive_poses.push_back(box_pose);
+    collision_object.operation = collision_object.ADD;
+    planning_scene.world.collision_objects.push_back(collision_object);
+
+    collision_object.header.frame_id = "world";
+    collision_object.id = "case1";
+    primitive.type = primitive.BOX;
+    primitive.dimensions.resize(3);
+    primitive.dimensions[primitive.BOX_X] = 0.6;
+    primitive.dimensions[primitive.BOX_Y] = 0.2;
+    primitive.dimensions[primitive.BOX_Z] = 0.75;  //agv = 1.5 //as = 1.2
+    box_pose.orientation.w = 1.0;
+    box_pose.position.x = -7.26; //-12.3
+    box_pose.position.y = 3.5;  //3 -3
+    box_pose.position.z = 1.25;
+    collision_object.primitives.push_back(primitive);
+    collision_object.primitive_poses.push_back(box_pose);
+    collision_object.operation = collision_object.ADD;
+    planning_scene.world.collision_objects.push_back(collision_object);
+
+    planning_scene.is_diff = true;
+    planning_scene_diff_publisher.publish(planning_scene);
+    ros::Duration(20.0).sleep();
+}
+
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "gantry_controller");
     ros::NodeHandle nh;
 
+    // add_objects(&nh);
+    
     // Create interfaces to each of the AGVs
     AriacAgvMap agv_map;
     for (int i = 0; i < NUM_AGVS; i++)

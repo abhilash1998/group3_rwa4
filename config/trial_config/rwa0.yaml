@@ -34,10 +34,10 @@ agv_infos:
           rpy: [pi, 0, pi/2]
   agv2:
     location: ks2
-  agv3:
-    location: ks3
   agv4:
-    location: ks4    
+    location: ks4
+  agv3:
+    location: ks3    
     
 orders:
   order_0:

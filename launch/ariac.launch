@@ -27,6 +27,8 @@
   <arg unless="$(arg load_moveit)" name="load_moveit_args" value="" />
   <arg if="$(arg load_moveit)" name="load_moveit_args" value="--load-moveit" />
 
+  <arg name="load_robot_description" default="true"/>
+
   <node name="ariac_sim" pkg="nist_gear" type="gear.py" args="
           $(arg verbose_args)
           $(arg state_logging_args)
@@ -38,11 +40,12 @@
           $(find group3_rwa4)/config/sensor_config/motion_control_sensor.yaml
           " required="true" output="screen" />
 
-  <!-- <group ns='ariac/gantry'>
+  <group ns='ariac/gantry'>
     <include file="$(find gantry_moveit_config)/launch/moveit_rviz.launch">
       <arg name="rviz_config" value="$(find motion_control)/rviz/gantry_moveit.rviz" />
     </include>
-  </group> -->
+  </group> 
+  
 
   <!-- <group ns='ariac/kitting'>
     <include file="$(find kitting_moveit_config)/launch/moveit_rviz.launch">

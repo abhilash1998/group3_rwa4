@@ -1,0 +1,5 @@
+<launch>
+  
+<node name = "obstacle_controller" pkg= "group3_rwa4" type = "obstacle_controller" args= "$(find group3_rwa4)/config/a.scene" />
+<!-- <node name = "moveit_publish_scene_from_text" pkg= "moveit_ros_planning" type = "moveit_publish_scene_from_text" args= "$(find group3_rwa4)/config/ariac.scene"/> -->
+</launch>

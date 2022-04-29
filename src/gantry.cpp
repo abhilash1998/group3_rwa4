@@ -75,73 +75,55 @@ Gantry::Gantry() :
         
 
         //home position
-        home1_.gantry_preset = { -2, 0, 0, -0.13, -2.89, 2.13, 0.72, 1.55, 0.83 };
+        home1_.gantry_preset = { -2, 0, 0, -0.13, -2.89, 2.13, 0.72, 1.55, 0.83  };
         home1_.name = "home1";
         home2_.gantry_preset = { -2, 0, 0, -0.1, -0.29, 1.15, -0.88, 1.79, 1.33 };
         home2_.name = "home2";
-        agv1_.gantry_preset = { -0.265, -3.875, 0,  -0.1, -0.29, 1.15, -0.88, 1.79, 1.33  };
+        agv1_.gantry_preset = { -0.265, -3.875, 0,  3.14, -0.5, -1.88, -0.75, 1.57, 0.0 };
         agv1_.name = "agv1";
-        agv2_.gantry_preset = { -0.265, -1.065, 0, -0.1, -0.29, 1.15, -0.88, 1.79, 1.33 };
+        agv2_.gantry_preset = { -0.265, -1.065, 0, 3.14, -0.5, -1.88, -0.75, 1.57, 0.0 };
         agv2_.name = "agv2";
-        agv3_.gantry_preset = { -0.265, 1.665, 0, -0.1, -0.29, 1.15, -0.88, 1.79, 1.33 };
+        agv3_.gantry_preset = { -0.265, 1.665, 0, 3.14, -0.5, -1.88, -0.75, 1.57, 0.0 };
         agv3_.name = "agv3";
-        agv4_.gantry_preset = { -0.265, 3.975, 0, -0.1, -0.29, 1.15, -0.88, 1.79, 1.33};
+        agv4_.gantry_preset = { -0.265, 3.975, 0, 3.14, -0.5, -1.88, -0.75, 1.57, 0.0 };
         agv4_.name = "agv4";
 
-        agv1_as1.gantry_preset = { -3.37, -4.05, 0, 0,  -1.13, 1.88, 0.72, 1.55, 0.83 };
+        agv1_as1.gantry_preset = { -3.37, -3.95, 0,  0,  -1.13, 1.88, 0.72, 1.55, 0.83};
         agv1_as1.name = "agv1_as1";
-        // agv2_as1.gantry_preset = { -5.30, -1.365, 0,  0, -1.13, 1.88, 0.72, 1.55, 0.83 };
-        // agv2_as1.name = "agv2_as1";
-        // agv3_as3.gantry_preset = { -5.30, 1.365, 0,  0, -1.13, 1.88, 0.72, 1.55, 0.83 };
-        // agv3_as3.name = "agv3_as3";
-        // agv4_as3.gantry_preset = { -5.30, 4.675, 0,  0, -1.13, 1.88, 0.72, 1.55, 0.83 };
-        // agv4_as3.name = "agv4_as3";
+        agv2_as1.gantry_preset = { -3.37, -2.25, 3.14,  0,  -1.13, 1.88, 0.72, 1.55, 0.83};
+        agv2_as1.name = "agv2_as1";
+        agv3_as3.gantry_preset = { -3.37, 2.25, 0, 0,  -1.13, 1.88, 0.72, 1.55, 0.83};
+        agv3_as3.name = "agv3_as3";
+        agv4_as3.gantry_preset = { -3.37, 3.95, 3.14, 0,  -1.13, 1.88, 0.72, 1.55, 0.83};
+        agv4_as3.name = "agv4_as3";
 
-        // agv1_as2.gantry_preset = { -10.30, -4.675, 0, 0, -1.13, 1.88, 0.72, 1.55, 0.83 };
-        // agv1_as2.name = "agv1_as2";
-        // agv2_as2.gantry_preset = { -10.30, -1.365, 0,  0, -1.13, 1.88, 0.72, 1.55, 0.83};
-        // agv2_as2.name = "agv2_as2";
-        // agv3_as4.gantry_preset = { -10.30, 1.365, 0,  0, -1.13, 1.88, 0.72, 1.55, 0.83 };
-        // agv3_as4.name = "agv3_as4";
-        // agv4_as4.gantry_preset = { -10.30, 4.675, 0,  0, -1.13, 1.88, 0.72, 1.55, 0.83 };
-        // agv4_as4.name = "agv4_as4";
+        agv1_as2.gantry_preset = { -8.37, -4.05, 0,  0,  -1.13, 1.88, 0.72, 1.55, 0.83};
+        agv1_as2.name = "agv1_as2";
+        agv2_as2.gantry_preset = { -8.37, -2.25, 3.14,   0,  -1.13, 1.88, 0.72, 1.55, 0.83};
+        agv2_as2.name = "agv2_as2";
+        agv3_as4.gantry_preset = { -8.37, 1.95, 0,  0,  -1.13, 1.88, 0.72, 1.55, 0.83 };
+        agv3_as4.name = "agv3_as4";
+        agv4_as4.gantry_preset = { -8.37, 4.05, 3.14,  0,  -1.13, 1.88, 0.72, 1.55, 0.83 };
+        agv4_as4.name = "agv4_as4";
 
         as1_.gantry_preset = { -4.11, -3.24, 1.57, -0.16, -2.79, 2.27, -0.75, 1.57, 0.00 };
+        // as1_.gantry_preset = { -4.11, -3.0, -(3*1.57), 3.14, -0.5, -1.88, -0.75, 1.57, 0.00 };
         as1_.name = "as1";
-        as2_.gantry_preset = { -9.70, -3.0, 1.57, -0.1, -0.29, 1.15, -0.88, 1.79, 1.33 };
+        as2_.gantry_preset = { -9.11, -3.24, 1.57, 3.14, -0.5, -1.88, -0.75, 1.57, 0.00 };
         as2_.name = "as2";
-        as3_.gantry_preset = { -4.70, 3.0, -(3 * 1.57), -0.1, -0.29, 1.15, -0.88, 1.79, 1.33 };
+        as3_.gantry_preset = { -4.11, 3.24, 1.57, 3.14, -0.5, -1.88, -0.75, 1.57, 0.00 };
         as3_.name = "as3";
-        as4_.gantry_preset = { -9.70, 3.0, -(3 * 1.57), -0.1, -0.29, 1.15, -0.88, 1.79, 1.33 };
+        as4_.gantry_preset = { -9.11, 3.24, 1.57, 3.14, -0.5, -1.88, -0.75, 1.57, 0.00 };
         as4_.name = "as4";
 
-        pump.gantry_preset = {0,0,0,0,0,0};
-        pump.name = "pump";
-        sensor.gantry_preset = {0,0,0,0,0,0};
-        sensor.name = "sensor";
-        regulator.gantry_preset = {0,0,0,0,0,0};
-        regulator.name = "regulator";
-        battery.gantry_preset = {0,0,0,0,0,0};
-        battery.name = "battery";
-
-        bin4_.gantry_preset = { -1.251, -3.379, -1.57, 0, -1.13, 1.88, 0.72, 1.55, 0.83 };
+        bin4_.gantry_preset = { -1.251, -3.379, -1.57, 3.14, -0.5, -1.88, -0.75, 1.57, 0.00 };
         bin4_.name = "bin4";
-        bin3_.gantry_preset = { -1.251, -2.565, -1.57, 0, -1.13, 1.88, 0.72, 1.55, 0.83 };
+        bin3_.gantry_preset = { -1.251, -2.565, -1.57, 3.14, -0.5, -1.88, -0.75, 1.57, 0.00 };
         bin3_.name = "bin3";
-        bin7_.gantry_preset = { -1.251, 2.565, -1.57, 0, -1.13, 1.88, 0.72, 1.55, 0.83 };
+        bin7_.gantry_preset = { -1.251, 2.565, -1.57, 3.14, -0.5, -1.88, -0.75, 1.57, 0.00 };
         bin7_.name = "bin7";
-        bin8_.gantry_preset = { -1.251, 3.379, -1.57,  0, -1.13, 1.88, 0.72, 1.55, 0.83 };
+        bin8_.gantry_preset = { -1.251, 3.379, -1.57, 3.14, -0.5, -1.88, -0.75, 1.57, 0.00 };
         bin8_.name = "bin8";
-
-        as1_waypoint.gantry_preset = { -2.70, -3.0, 1.57, -0.1, -0.29, 1.15, -0.88, 1.79, 1.33 };
-        as1_waypoint.name = "as1_waypoint";
-        as2_waypoint.gantry_preset = { -7.70, -3.0, 1.57, -0.1, -0.29, 1.15, -0.88, 1.79, 1.33 };
-        as2_waypoint.name = "as2_waypoint";
-        as3_waypoint.gantry_preset = { -2.70, 3.0, -(3 * 1.57), -0.1, -0.29, 1.15, -0.88, 1.79, 1.33 };
-        as3_waypoint.name = "as3_waypoint";
-        as4_waypoint.gantry_preset = { -7.70, 3.0, -(3 * 1.57), -0.1, -0.29, 1.15, -0.88, 1.79, 1.33 };
-        as4_waypoint.name = "as4_waypoint";
-
 
         // raw pointers are frequently used to refer to the planning group for improved performance.
         // to start, we will create a pointer that references the current robot’s state.
@@ -152,8 +134,6 @@ Gantry::Gantry() :
     current_state->copyJointGroupPositions(joint_model_group, joint_group_positions_);
 
 }
-
-
     //////////////////////////////////////////////////////
     void Gantry::moveBaseTo(double part_pose_x, double part_pose_y) {
         // get the current joint positions
@@ -191,12 +171,9 @@ Gantry::Gantry() :
         //convert goal_in_tray_frame into world frame
         auto init_pose_in_world = utils::transformToWorldFrame(camera_frame, tf_buffer);
         if (pickPart(part_type, init_pose_in_world,1)) {
-            goToPresetLocation("home1");
             placePart(init_pose_in_world, goal_in_tray_frame,part_type, agv); /// Changed function.
-            goToPresetLocation("home1");
         }
     }
-
 
     bool Gantry::pickPart(std::string part_type, geometry_msgs::Pose part_init_pose, int ss) {
         gantry_group_.setMaxVelocityScalingFactor(1.0);
@@ -397,7 +374,7 @@ Gantry::Gantry() :
             target_pose_in_world.orientation.y = q_rslt.y();
             target_pose_in_world.orientation.z = q_rslt.z();
             target_pose_in_world.orientation.w = q_rslt.w();
-            target_pose_in_world.position.z += 0.10;
+            target_pose_in_world.position.z += 0.15;
 
             gantry_arm_group_.setMaxVelocityScalingFactor(0.1);
             gantry_arm_group_.setPoseTarget(target_pose_in_world);
@@ -409,40 +386,6 @@ Gantry::Gantry() :
             
 
         return true;
-    }
-    void Gantry::set_arm_pose(std::string part_type){
-
-        GantryPresetLocation location;
-        if (part_type.compare("pump") == 0) {
-            location = pump;
-        }
-        else if (part_type.compare("sensor") == 0) {
-            location = sensor;
-        }
-        else if (part_type.compare("regulator") == 0) {
-            location = regulator;
-        }
-        else if (part_type.compare("battery") == 0) {
-            location = battery;
-        }
-
-        joint_group_positions_.at(0) = location.gantry_preset.at(0);
-        joint_group_positions_.at(1) = location.gantry_preset.at(1);
-        joint_group_positions_.at(2) = location.gantry_preset.at(2);
-        joint_group_positions_.at(3) = location.gantry_preset.at(3);
-        joint_group_positions_.at(4) = location.gantry_preset.at(4);
-        joint_group_positions_.at(5) = location.gantry_preset.at(5);
-
-        gantry_arm_group_.setJointValueTarget(joint_group_positions_);
-
-        moveit::planning_interface::MoveGroupInterface::Plan my_plan;
-        // check a plan is found first then execute the action
-        bool success1 = (gantry_arm_group_.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-        if (success1)
-            gantry_arm_group_.setMaxVelocityScalingFactor(0.5);
-            gantry_arm_group_.move();
-            gantry_arm_group_.setMaxVelocityScalingFactor(1);
-
     }
 
     /////////////////////////////////////////////////////
@@ -514,43 +457,43 @@ Gantry::Gantry() :
         else if (location_name.compare("agv1_as1") == 0) {
             location = agv1_as1;
         }
-        // else if (location_name.compare("agv2_as1") == 0) {
-        //     location = agv2_as1;
-        // }
-        // else if (location_name.compare("agv3_as3") == 0) {
-        //     location = agv3_as3;
-        // }
-        // else if (location_name.compare("agv4_as3") == 0) {
-        //     location = agv4_as3;
-        // }
-        // ///////////
-        // else if (location_name.compare("agv1_as2") == 0) {
-        //     location = agv1_as2;
-        // }
-        // else if (location_name.compare("agv2_as2") == 0) {
-        //     location = agv2_as2;
-        // }
-        // else if (location_name.compare("agv3_as4") == 0) {
-        //     location = agv3_as4;
-        // }
-        // else if (location_name.compare("agv4_as4") == 0) {
-        //     location = agv4_as4;
-        // }
+        else if (location_name.compare("agv2_as1") == 0) {
+            location = agv2_as1;
+        }
+        else if (location_name.compare("agv3_as3") == 0) {
+            location = agv3_as3;
+        }
+        else if (location_name.compare("agv4_as3") == 0) {
+            location = agv4_as3;
+        }
+        ///////////
+        else if (location_name.compare("agv1_as2") == 0) {
+            location = agv1_as2;
+        }
+        else if (location_name.compare("agv2_as2") == 0) {
+            location = agv2_as2;
+        }
+        else if (location_name.compare("agv3_as4") == 0) {
+            location = agv3_as4;
+        }
+        else if (location_name.compare("agv4_as4") == 0) {
+            location = agv4_as4;
+        }
         ////////
         else if (location_name.compare("as1") == 0) {
             // goToPresetLocation("as1_waypoint");
             location = as1_;
         }
         else if (location_name.compare("as2") == 0) {
-            goToPresetLocation("as2_waypoint");
+            // goToPresetLocation("as2_waypoint");
             location = as2_;
         }
         else if (location_name.compare("as3") == 0) {
-            goToPresetLocation("as3_waypoint");
+            // goToPresetLocation("as3_waypoint");
             location = as3_;
         }
         else if (location_name.compare("as4") == 0) {
-            goToPresetLocation("as4_waypoint");
+            // goToPresetLocation("as4_waypoint");
             location = as4_;
         }
         ///////////
@@ -567,18 +510,18 @@ Gantry::Gantry() :
             location = bin8_;
         }
         ////////////
-        else if (location_name.compare("as1_waypoint") == 0) {
-            location = as1_waypoint;
-        }
-        else if (location_name.compare("as2_waypoint") == 0) {
-            location = as2_waypoint;
-        }
-        else if (location_name.compare("as3_waypoint") == 0) {
-            location = as3_waypoint;
-        }
-        else if (location_name.compare("as4_waypoint") == 0) {
-            location = as4_waypoint;
-        }
+        // else if (location_name.compare("as1_waypoint") == 0) {
+        //     location = as1_waypoint;
+        // }
+        // else if (location_name.compare("as2_waypoint") == 0) {
+        //     location = as2_waypoint;
+        // }
+        // else if (location_name.compare("as3_waypoint") == 0) {
+        //     location = as3_waypoint;
+        // }
+        // else if (location_name.compare("as4_waypoint") == 0) {
+        //     location = as4_waypoint;
+        // }
 
         joint_group_positions_.at(0) = location.gantry_preset.at(0);
         joint_group_positions_.at(1) = location.gantry_preset.at(1);
