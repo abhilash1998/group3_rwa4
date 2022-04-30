@@ -259,6 +259,7 @@ bool Arm::pickPart(std::string part_type, geometry_msgs::Pose part_init_pose, in
     // ros::Duration(sleep(1.0));
     arm_group_.setPoseTarget(postgrasp_pose3);
     arm_group_.move();
+    ros::Duration(sleep(1.0));
 
     return true;
 }
@@ -408,6 +409,12 @@ geometry_msgs::Pose Arm::transform_to_world_frame(const geometry_msgs::Pose& tar
 {
     return utils::transformToWorldFrame(target, agv_id, tf_buffer);
 }
+
+geometry_msgs::Pose Arm::transform_to_world_frame(const std::string& part_in_camera_frame)
+{    
+    return utils::transformToWorldFrame(part_in_camera_frame, tf_buffer);
+}
+    
 
 ///////////////////////////
 ////// Callback Functions

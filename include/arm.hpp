@@ -67,6 +67,7 @@ public:
 
     // Use this robot's tf buffer to resolve an AGV in the world frame
     geometry_msgs::Pose transform_to_world_frame(const geometry_msgs::Pose& target, const std::string& agv_id);
+    geometry_msgs::Pose transform_to_world_frame(const std::string& part_in_camera_frame);
 
     //--preset locations;
     start home1_, home2_;

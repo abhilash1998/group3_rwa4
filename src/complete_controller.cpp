@@ -289,6 +289,150 @@ namespace {
             }
         }
     }
+    void cater_assembly_shipments(const AriacAgvMap& agv_map,
+                                 AgilityChallenger* const agility,
+                                 Arm* const arm,
+                                 Gantry* const garm,
+                                 const int order_priority,
+                                 const std::string& order_id,
+                                 std::vector<nist_gear::AssemblyShipment>& assembly_shipments)
+    {
+        // Ignore request if there are no assembly shipments
+        if (assembly_shipments.empty())
+        {
+            return;
+        }
+
+        ROS_INFO_STREAM("Catering "
+                        << assembly_shipments.size()
+                        << " assembly shipments from order with priority of "
+                        << order_priority);
+
+        int counter = 0;
+        // parse each assembly shipment
+        for (const auto& as : assembly_shipments)
+        {
+            std::vector<nist_gear::Product> products = as.products;
+            if (products.empty())
+            {
+                ROS_FATAL_STREAM("Assembly shipment had no products?");
+                ros::shutdown();
+                return;
+            }
+
+            // loop through each product in this shipment
+            while (!products.empty())
+            {
+                // Remove this product from the list, with the intention that
+                // it will be catered to
+                const nist_gear::Product product = products.front();
+                products.erase(products.begin());
+                ROS_INFO_STREAM("Catering product '"
+                                << product.type
+                                << "', "
+                                << products.size()
+                                << " remaining afterwards");
+
+                // Get the bins in which this part appears
+                const std::vector<int> bin_indices = agility->get_as1_indices_of(product.type);
+                if (bin_indices.empty())
+                {
+                    ROS_FATAL_STREAM(
+                        "No matching part '"
+                        << product.type
+                        << "' found by any logical camera with contents "
+                        << agility->get_logical_camera_contents()
+                    );
+                    // ros::shutdown();
+                    // return;
+                }
+                // ROS_ERROR_STREAM(bin_indices.first);
+
+                // counter++;
+
+                for (auto iter = bin_indices.cbegin(); iter != bin_indices.cend(); ++iter)
+                {
+                    bool item_ready = false;
+                    if( as.station_id.compare("as1")==0 && ( *iter == 9 or *iter == 10 ) )
+                    {
+                        item_ready = true;
+                    }
+                    else if( as.station_id.compare("as2")==0 && ( *iter == 11 or *iter == 12 ) )
+                    {
+                        item_ready = true;
+                    }
+                    else if( as.station_id.compare("as3")==0 && ( *iter == 13 or *iter == 14 ) )
+                    {
+                        item_ready = true;
+                    }
+                    else if( as.station_id.compare("as4")==0 && ( *iter == 15 or *iter == 16 ) )
+                    {
+                        item_ready = true;
+                    }
+                    
+                    if(!item_ready)
+                    {
+                        continue;
+                    }
+
+                    std::string part_frame;
+                    for (counter = 1; counter <= 12; counter++)
+                    {
+                        bool hit = false;
+                        part_frame = build_part_frame(product.type, *iter, counter);
+                        if (does_frame_exist(part_frame, 0.5))
+                        {
+                            if (hit_list.empty())
+                            {   
+                                // ROS_INFO_STREAM("Hit List Updated");
+                                hit_list.emplace_back(product.type + std::to_string(counter));
+                            }
+                            else
+                            {
+                                for (auto s : hit_list)
+                                {
+                                    if(s.compare(product.type + std::to_string(counter)) == 0)
+                                    {
+                                        hit = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (hit) {continue;}
+                            else 
+                            {
+                                hit_list.emplace_back(product.type + std::to_string(counter));
+                                break;
+                            }
+                        }
+                    }
+                    if (!does_frame_exist(part_frame, 0.5))
+                    {
+                        continue;
+                    }
+
+                    // Move the part from where it is to the AGV bed
+                    ROS_INFO_STREAM("Moving part '" << product.type << "' to '" << as.station_id << "' (" << part_frame << ")");
+                    garm->movePart(product.type, part_frame, product.pose, as.station_id);
+                    ROS_INFO_STREAM("Placed part '" << product.type << "' at '" << as.station_id << "'");
+                    // agility->queue_for_fault_verification(
+                    //     product,
+                    //     order_id,
+                    //     as.station_id,
+                    //     arm->transform_to_world_frame(product.pose, as.agv_id)
+                    // );
+                    ros::Duration(0.2).sleep();
+
+                    // Give an opportunity for higher priority orders
+                    cater_higher_priority_order_if_necessary(agv_map, agility, arm, garm, order_priority);
+
+                    break;
+                }
+
+            }
+
+        }
+    }
 
     void cater_order(const AriacAgvMap& agv_map,
                      AgilityChallenger* const agility,
@@ -305,6 +449,15 @@ namespace {
             order_priority,
             order.order_id,
             order.kitting_shipments
+        );
+        cater_assembly_shipments(
+            agv_map,
+            agility,
+            arm,
+            garm,
+            order_priority,
+            order.order_id,
+            order.assembly_shipments
         );
     }
 
@@ -328,7 +481,7 @@ namespace {
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "arm_controller");
+    ros::init(argc, argv, "complete_controller");
     ros::NodeHandle nh;
 
     // Create interfaces to each of the AGVs

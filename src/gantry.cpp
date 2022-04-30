@@ -79,13 +79,13 @@ Gantry::Gantry() :
         home1_.name = "home1";
         home2_.gantry_preset = { -8, 0, 0, 0.0, -1.13, 1.88, -0.72, 1.55, 0.83 };
         home2_.name = "home2";
-        agv1_.gantry_preset = { -0.265, -3.875, 0,  0.0, -1.13, 1.88, -0.72, 1.55, 0.83};
+        agv1_.gantry_preset = { 0.03, -4.0, 0.0, 0.0, -1.13, 1.88, -0.72, 1.55, 0.83};
         agv1_.name = "agv1";
-        agv2_.gantry_preset = { -0.265, -1.065, 0, 0.0, -1.13, 1.88, -0.72, 1.55, 0.83};
+        agv2_.gantry_preset = { 0.03, -2.0, -3.14, 0.0, -1.13, 1.88, -0.72, 1.55, 0.83};
         agv2_.name = "agv2";
-        agv3_.gantry_preset = { -0.265, 1.665, 0, 0.0, -1.13, 1.88, -0.72, 1.55, 0.83};
+        agv3_.gantry_preset = { 0.03, 2.0, 0.0, 0.0, -1.13, 1.88, -0.72, 1.55, 0.83};
         agv3_.name = "agv3";
-        agv4_.gantry_preset = { -0.265, 3.975, 0,0.0, -1.13, 1.88, -0.72, 1.55, 0.83 };
+        agv4_.gantry_preset = { 0.03, 4.0, -3.14, 0.0, -1.13, 1.88, -0.72, 1.55, 0.83};
         agv4_.name = "agv4";
         double x,y,z;
         y = -4.50;
@@ -116,13 +116,13 @@ Gantry::Gantry() :
         as4_.gantry_preset = { -8.85, 3.24, 1.57, -1.38, -2.14, 1.88, -0.38, 0.13, 0.83};
         as4_.name = "as4";
 
-        bin4_.gantry_preset = { -1.30, -3.24, -1.57, 0.0, -1.13, 1.88, -0.72, 1.55, 0.83 };
+        bin4_.gantry_preset = { -1.20, -3.24, -1.57, 0.0, -1.13, 1.88, -0.72, 1.55, 0.83 };
         bin4_.name = "bin4";
-        bin3_.gantry_preset = { -1.30, -2.43, -1.57, 0.0, -1.13, 1.88, -0.72, 1.55, 0.83 };
+        bin3_.gantry_preset = { -1.20, -2.43, -1.57, 0.0, -1.13, 1.88, -0.72, 1.55, 0.83 };
         bin3_.name = "bin3";
-        bin7_.gantry_preset = { -1.30, 2.61, -1.57, 0.0, -1.13, 1.88, -0.72, 1.55, 0.83 };
+        bin7_.gantry_preset = { -1.20, 2.61, -1.57, 0.0, -1.13, 1.88, -0.72, 1.55, 0.83 };
         bin7_.name = "bin7";
-        bin8_.gantry_preset = { -1.30, 3.42, -1.57, 0.0, -1.13, 1.88, -0.72, 1.55, 0.83 };
+        bin8_.gantry_preset = { -1.20, 3.42, -1.57, 0.0, -1.13, 1.88, -0.72, 1.55, 0.83 };
         bin8_.name = "bin8";
 
         goodArm_.gantry_preset = { -0.13, -2.89, 2.13, 0.72, 1.55, 0.83 };
@@ -346,6 +346,7 @@ Gantry::Gantry() :
             // ros::Duration(sleep(1.0));
             gantry_arm_group_.setPoseTarget(postgrasp_pose3);
             gantry_arm_group_.move();
+            ros::Duration(sleep(1.0));
 
             // gantryArmPreset();
 
