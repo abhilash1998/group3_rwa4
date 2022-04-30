@@ -175,7 +175,7 @@ bool Arm::pickPart(std::string part_type, geometry_msgs::Pose part_init_pose, in
             z_pos = 0.813;
         }
         if (part_type.find("battery") != std::string::npos) {
-            z_pos = 0.793;
+            z_pos = 0.803;  //793
         }
     }
     else{
@@ -189,7 +189,7 @@ bool Arm::pickPart(std::string part_type, geometry_msgs::Pose part_init_pose, in
             z_pos = 0.833;
         }
         if (part_type.find("battery") != std::string::npos) {
-            z_pos = 0.823;
+            z_pos = 0.833; //823
         }
     }
 
@@ -210,7 +210,7 @@ bool Arm::pickPart(std::string part_type, geometry_msgs::Pose part_init_pose, in
     // grasp pose: right above the part
     auto grasp_pose = part_init_pose;
     grasp_pose.orientation = arm_ee_link_pose.orientation;
-    grasp_pose.position.z = z_pos + 0.015;
+    grasp_pose.position.z = z_pos - 0.01;
 
     waypoints.push_back(pregrasp_pose);
     waypoints.push_back(grasp_pose);
@@ -242,7 +242,7 @@ bool Arm::pickPart(std::string part_type, geometry_msgs::Pose part_init_pose, in
     plan.trajectory_ = trajectory;
     arm_group_.execute(plan);
 
-    ros::Duration(sleep(2.0));
+    // ros::Duration(sleep(2.0));
 
     // move the arm 1 mm down until the part is attached
     while (!gripper_state_.attached)
@@ -256,7 +256,7 @@ bool Arm::pickPart(std::string part_type, geometry_msgs::Pose part_init_pose, in
     arm_group_.setMaxVelocityScalingFactor(1.0);
     arm_group_.setMaxAccelerationScalingFactor(1.0);
     ROS_INFO_STREAM("[Gripper] = object attached");
-    ros::Duration(sleep(1.0));
+    // ros::Duration(sleep(1.0));
     arm_group_.setPoseTarget(postgrasp_pose3);
     arm_group_.move();
 
@@ -328,10 +328,10 @@ bool Arm::placePart(geometry_msgs::Pose part_init_pose, geometry_msgs::Pose part
     target_pose_in_world.orientation.w = q_rslt.w();
     target_pose_in_world.position.z += 0.15;
 
-    arm_group_.setMaxVelocityScalingFactor(0.1);
+    arm_group_.setMaxVelocityScalingFactor(0.5);
     arm_group_.setPoseTarget(target_pose_in_world);
     arm_group_.move();
-    ros::Duration(2.0).sleep();
+    // ros::Duration(2.0).sleep();
     deactivateGripper();
     arm_group_.setMaxVelocityScalingFactor(1.0);
     goToPresetLocation(agv);

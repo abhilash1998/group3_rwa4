@@ -35,7 +35,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(arm_controller src/arm.cpp src/ariac_agv.cpp src/agility.cpp src/utils.cpp src/arm_controller.cpp)
+add_executable(arm_controller src/arm.cpp src/ariac_agv.cpp src/agility.cpp src/utils.cpp src/gantry.cpp src/arm_controller.cpp)
 target_link_libraries(arm_controller ${catkin_LIBRARIES})
 
 add_executable(gantry_controller src/ariac_agv.cpp src/agility.cpp src/utils.cpp src/gantry_controller.cpp src/gantry.cpp)

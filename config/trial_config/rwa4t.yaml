@@ -33,7 +33,7 @@ agv_infos:
         type: assembly_pump_blue
         pose:
           xyz: [-0.1, -0.1, 0]
-          rpy: [pi, 0, pi/2]
+          rpy: [0, 0, pi/2]
   agv3:
     location: ks3
   agv4:
@@ -83,7 +83,7 @@ orders:
             rpy: [pi, 0, 0]
 
 models_over_bins:
-   bin3:
+   bin2:
      models:
        assembly_pump_blue:
          xyz_start: [0.1, 0.1, 0.0]
@@ -91,7 +91,7 @@ models_over_bins:
          rpy: [0, 0, pi/4]
          num_models_x: 2
          num_models_y: 2
-   bin6:
+   bin8:
      models:
        assembly_pump_blue:
          xyz_start: [0.2, 0.2, 0.0]

@@ -49,6 +49,7 @@ namespace {
     void cater_higher_priority_order_if_necessary(const AriacAgvMap& agv_map,
                                                   AgilityChallenger* const agility,
                                                   Arm* const arm,
+                                                  Gantry* const garm,
                                                   const int current_order_priority);
 
     void cater_faulty_parts(AgilityChallenger* const agility,
@@ -95,6 +96,7 @@ namespace {
     void cater_kitting_shipments(const AriacAgvMap& agv_map,
                                  AgilityChallenger* const agility,
                                  Arm* const arm,
+                                 Gantry* const garm,
                                  const int order_priority,
                                  const std::string& order_id,
                                  std::vector<nist_gear::KittingShipment>& kitting_shipments)
@@ -190,9 +192,21 @@ namespace {
                     }
 
                     // Move the part from where it is to the AGV bed
-                    ROS_INFO_STREAM("Moving part '" << product.type << "' to '" << ks.agv_id << "' (" << part_frame << ")");
-                    arm->movePart(product.type, part_frame, product.pose, ks.agv_id);
-                    ROS_INFO_STREAM("Placed part '" << product.type << "' at '" << ks.agv_id << "'");
+                    //check TF for Gantry or Arm
+                    auto world_pose = utils::transformToWorldFrame(part_frame);
+                    if (world_pose.position.x < -2.3)
+                    {
+                        ROS_INFO_STREAM("GANTRY WILL DO THE TASK");
+                        ROS_INFO_STREAM("Moving part '" << product.type << "' to '" << ks.agv_id << "' (" << part_frame << ")");
+                        garm->movePart(product.type, part_frame, product.pose, ks.agv_id);
+                        ROS_INFO_STREAM("Placed part '" << product.type << "' at '" << ks.agv_id << "'");
+                    }
+                    else{
+                        ROS_INFO_STREAM("KITTING ARM WILL DO THE TASK");
+                        ROS_INFO_STREAM("Moving part '" << product.type << "' to '" << ks.agv_id << "' (" << part_frame << ")");
+                        arm->movePart(product.type, part_frame, product.pose, ks.agv_id);
+                        ROS_INFO_STREAM("Placed part '" << product.type << "' at '" << ks.agv_id << "'");
+                    }
                     agility->queue_for_fault_verification(
                         product,
                         order_id,
@@ -202,7 +216,7 @@ namespace {
                     ros::Duration(0.2).sleep();
 
                     // Give an opportunity for higher priority orders
-                    cater_higher_priority_order_if_necessary(agv_map, agility, arm, order_priority);
+                    cater_higher_priority_order_if_necessary(agv_map, agility, arm, garm, order_priority);
 
                     // If there is no sensor blackout, check for faulty parts
                     if (!agility->is_sensor_blackout_active())
@@ -210,11 +224,11 @@ namespace {
                         // After checking, give an opportunity for higher
                         // priority orders
                         cater_faulty_parts(agility, arm, order_id, products);
-                        cater_higher_priority_order_if_necessary(agv_map, agility, arm, order_priority);
+                        cater_higher_priority_order_if_necessary(agv_map, agility, arm, garm, order_priority);
                     }
                     else
                     {
-                         ROS_ERROR_STREAM("SENSOR BLCKOUT");
+                         ROS_WARN_STREAM("SENSOR BLCKOUT");
                     }
 
                     // It may be faulty, but we placed the part. Whether it was
@@ -241,7 +255,7 @@ namespace {
                     // for higher priority orders before resuming
                     if (!products.empty())
                     {
-                        cater_higher_priority_order_if_necessary(agv_map, agility, arm, order_priority);
+                        cater_higher_priority_order_if_necessary(agv_map, agility, arm, garm, order_priority);
                     }
                 }
             }
@@ -277,6 +291,7 @@ namespace {
     void cater_order(const AriacAgvMap& agv_map,
                      AgilityChallenger* const agility,
                      Arm* const arm,
+                     Gantry* const garm,
                      const int order_priority,
                      nist_gear::Order& order)
     {
@@ -284,6 +299,7 @@ namespace {
             agv_map,
             agility,
             arm,
+            garm,
             order_priority,
             order.order_id,
             order.kitting_shipments
@@ -293,6 +309,7 @@ namespace {
     void cater_higher_priority_order_if_necessary(const AriacAgvMap& agv_map,
                                                   AgilityChallenger* const agility,
                                                   Arm* const arm,
+                                                  Gantry* const garm,
                                                   const int current_order_priority)
     {
         if (agility->higher_priority_order_requested(current_order_priority))
@@ -301,7 +318,7 @@ namespace {
             int new_order_priority;
             nist_gear::Order new_order;
             new_order_priority = agility->consume_pending_order(new_order);
-            cater_order(agv_map, agility, arm, new_order_priority, new_order);
+            cater_order(agv_map, agility, arm, garm, new_order_priority, new_order);
             ROS_INFO_STREAM("Finished higher priority order, returning to previous order");
         }
     }
@@ -327,7 +344,7 @@ int main(int argc, char **argv)
 
     AgilityChallenger agility(&nh);
     Arm arm;
-    // Gantry garm;
+    Gantry garm;
 
     //
     // Start the competition
@@ -395,6 +412,7 @@ int main(int argc, char **argv)
     //
 
     arm.goToPresetLocation("home1");
+    garm.goToPresetLocation("home1");
     arm.goToPresetLocation("home2");
 
     int current_order_priority;
@@ -409,6 +427,7 @@ int main(int argc, char **argv)
                 agv_map,
                 &agility,
                 &arm,
+                &garm,
                 current_order_priority,
                 current_order
             );

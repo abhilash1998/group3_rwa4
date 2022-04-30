@@ -116,13 +116,13 @@ Gantry::Gantry() :
         as4_.gantry_preset = { -8.85, 3.24, 1.57, -1.38, -2.14, 1.88, -0.38, 0.13, 0.83};
         as4_.name = "as4";
 
-        bin4_.gantry_preset = { -1.251, -3.379, -1.57, -0.13, -2.89, 2.13, 0.72, 1.55, 0.83 };
+        bin4_.gantry_preset = { -1.30, -3.24, -1.57, 0.0, -1.13, 1.88, -0.72, 1.55, 0.83 };
         bin4_.name = "bin4";
-        bin3_.gantry_preset = { -1.251, -2.565, -1.57, -0.13, -2.89, 2.13, 0.72, 1.55, 0.83 };
+        bin3_.gantry_preset = { -1.30, -2.43, -1.57, 0.0, -1.13, 1.88, -0.72, 1.55, 0.83 };
         bin3_.name = "bin3";
-        bin7_.gantry_preset = { -1.251, 2.565, -1.57,-0.13, -2.89, 2.13, 0.72, 1.55, 0.83 };
+        bin7_.gantry_preset = { -1.30, 2.61, -1.57, 0.0, -1.13, 1.88, -0.72, 1.55, 0.83 };
         bin7_.name = "bin7";
-        bin8_.gantry_preset = { -1.251, 3.379, -1.57, -0.13, -2.89, 2.13, 0.72, 1.55, 0.83 };
+        bin8_.gantry_preset = { -1.30, 3.42, -1.57, 0.0, -1.13, 1.88, -0.72, 1.55, 0.83 };
         bin8_.name = "bin8";
 
         goodArm_.gantry_preset = { -0.13, -2.89, 2.13, 0.72, 1.55, 0.83 };
@@ -141,7 +141,7 @@ Gantry::Gantry() :
         // get the current joint positions
         ROS_INFO_STREAM("part x :"<< part_pose_x << "part y: "<< part_pose_y);
 
-        if (part_pose_x >= -2.351){
+        
             if (3.079 <= part_pose_y && part_pose_y <= 3.679){
                 goToPresetLocation("bin4");
             }
@@ -154,7 +154,7 @@ Gantry::Gantry() :
             else if(-3.679 <= part_pose_y && part_pose_y <= -3.079){
                 goToPresetLocation("bin8");                
             }
-        }
+        
         //////
         else if (-6.00 <= part_pose_x && part_pose_x <= -4.00){
             if (part_pose_y >= 3.800){
@@ -311,7 +311,7 @@ Gantry::Gantry() :
 
         // move the arm to the pregrasp pose
         gantry_arm_group_.setPoseTarget(pregrasp_pose);
-        ros::Duration(sleep(2.0));
+        // ros::Duration(sleep(2.0));
         gantry_arm_group_.move();
 
         
@@ -330,7 +330,7 @@ Gantry::Gantry() :
         plan.trajectory_ = trajectory;
         gantry_arm_group_.execute(plan);
 
-        ros::Duration(sleep(2.0));
+        // ros::Duration(sleep(2.0));
 
         // move the arm 1 mm down until the part is attached
         while (!gripper_state_.attached) {
@@ -419,7 +419,7 @@ Gantry::Gantry() :
             gantry_arm_group_.setMaxVelocityScalingFactor(0.3);
             gantry_arm_group_.setPoseTarget(target_pose_in_world);
             gantry_arm_group_.move();
-            ros::Duration(2.0).sleep();
+            // ros::Duration(2.0).sleep();
             deactivateGripper();
             gantry_arm_group_.setMaxVelocityScalingFactor(1.0);
             // gantryArmPreset();
