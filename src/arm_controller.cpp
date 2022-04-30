@@ -327,6 +327,7 @@ int main(int argc, char **argv)
 
     AgilityChallenger agility(&nh);
     Arm arm;
+    // Gantry garm;
 
     //
     // Start the competition

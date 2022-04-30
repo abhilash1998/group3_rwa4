@@ -256,7 +256,7 @@ bool Arm::pickPart(std::string part_type, geometry_msgs::Pose part_init_pose, in
     arm_group_.setMaxVelocityScalingFactor(1.0);
     arm_group_.setMaxAccelerationScalingFactor(1.0);
     ROS_INFO_STREAM("[Gripper] = object attached");
-    ros::Duration(sleep(2.0));
+    ros::Duration(sleep(1.0));
     arm_group_.setPoseTarget(postgrasp_pose3);
     arm_group_.move();
 

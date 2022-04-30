@@ -34,7 +34,7 @@
         typedef struct GantryPresetLocation {
             std::vector<double> gantry_preset;  //9 joints
             std::string name;
-        } start, bin, agv, agv_pos1, agv_pos2, grasp, as, waypoint, part;
+        } start, bin, agv, agv_pos1, agv_pos2, grasp, as, arm;
 
         
         Gantry();
@@ -64,7 +64,7 @@
         void movePart(std::string part_type, std::string camera_frame, geometry_msgs::Pose goal_in_tray_frame, std::string agv);
         void activateGripper();
         void deactivateGripper();
-        void set_arm_pose(std::string part_type);
+
 
         
         void moveBaseTo(double small_long_joint,double torso_rail_joint);
@@ -76,6 +76,7 @@
         // Send command message to robot controller
         bool sendJointPosition(trajectory_msgs::JointTrajectory command_msg);
         void goToPresetLocation(std::string location_name);
+        void gantryArmPreset();
 
         //--preset locations;
         start home1_, home2_;
@@ -84,8 +85,7 @@
         agv_pos2 agv1_as2, agv2_as2, agv3_as4, agv4_as4;
         as as1_ , as2_ , as3_ , as4_;
         bin bin3_, bin4_, bin7_, bin8_ ;
-        waypoint as1_waypoint, as2_waypoint, as3_waypoint, as4_waypoint;
-        part pump, sensor, regulator, battery;
+        arm goodArm_;
 
         //-- pointer variable for the current part number
         int* counter;

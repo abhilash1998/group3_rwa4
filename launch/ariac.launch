@@ -42,7 +42,7 @@
 
   <group ns='ariac/gantry'>
     <include file="$(find gantry_moveit_config)/launch/moveit_rviz.launch">
-      <arg name="rviz_config" value="$(find motion_control)/rviz/gantry_moveit.rviz" />
+      <arg name="rviz_config" value="$(find group3_rwa4)/rviz/gantry_moveit.rviz" />
     </include>
   </group> 
   
