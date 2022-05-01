@@ -103,10 +103,11 @@ void Arm::moveBaseTo(double linear_arm_actuator_joint_position)
 //////////////////////////////////////////////////////
 void Arm::movePart(std::string part_type, std::string camera_frame, geometry_msgs::Pose goal_in_tray_frame, std::string agv)
 {
+    bool flip_=false;
     //convert goal_in_tray_frame into world frame
     auto init_pose_in_world = utils::transformToWorldFrame(camera_frame, tf_buffer);
     if (pickPart(part_type, init_pose_in_world, 0)) {
-        placePart(init_pose_in_world, goal_in_tray_frame, agv);
+        placePart(init_pose_in_world, goal_in_tray_frame, agv,flip_);
     }
 }
 
@@ -265,14 +266,19 @@ bool Arm::pickPart(std::string part_type, geometry_msgs::Pose part_init_pose, in
 }
 
 /////////////////////////////////////////////////////
-bool Arm::placePart(geometry_msgs::Pose part_init_pose, geometry_msgs::Pose part_pose_in_frame, std::string agv)
+bool Arm::placePart(geometry_msgs::Pose part_init_pose, geometry_msgs::Pose part_pose_in_frame, std::string agv,bool flip_)
 {
     goToPresetLocation(agv);
     // get the target pose of the part in the world frame
-
-    auto target_pose_in_world = utils::transformToWorldFrame(
+  geometry_msgs::Pose target_pose_in_world;
+    if(flip_){
+         target_pose_in_world =  part_pose_in_frame;
+    }else{
+     target_pose_in_world = utils::transformToWorldFrame(
         part_pose_in_frame,
         agv);
+    }
+    
 
 
     geometry_msgs::Pose arm_ee_link_pose = arm_group_.getCurrentPose().pose;

@@ -201,13 +201,15 @@ Gantry::Gantry() :
     void Gantry::movePart(std::string part_type, std::string camera_frame, geometry_msgs::Pose goal_in_tray_frame, std::string agv) {
         //convert goal_in_tray_frame into world frame
         int type =0;
+        bool flip_=false;
         if((agv.compare("as1") == 0) or (agv.compare("as2") == 0) or (agv.compare("as3") == 0) or (agv.compare("as4") == 0))
         {
             type = 1;
         }
         auto init_pose_in_world = utils::transformToWorldFrame(camera_frame, tf_buffer);
         if (pickPart(part_type, init_pose_in_world, type)) {
-            placePart(init_pose_in_world, goal_in_tray_frame,part_type, agv); /// Changed function.
+            placePart(init_pose_in_world, goal_in_tray_frame,part_type, agv,flip_); /// Changed function.
+
         }
     }
 
@@ -353,15 +355,23 @@ Gantry::Gantry() :
             return true;
         
     }
-    bool Gantry::placePart(geometry_msgs::Pose part_init_pose, geometry_msgs::Pose part_pose_in_frame,std::string part_type, std::string agv)
+    bool Gantry::placePart(geometry_msgs::Pose part_init_pose, geometry_msgs::Pose part_pose_in_frame,std::string part_type, std::string agv,bool flip_)
     {
             // gantryArmPreset();       
             goToPresetLocation(agv);
+              geometry_msgs::Pose target_pose_in_world;
+    if(flip_){
+         target_pose_in_world =  part_pose_in_frame;
+    }else{
+     target_pose_in_world = utils::transformToWorldFrame(
+        part_pose_in_frame,
+        agv);
+    }
             // get the target pose of the part in the world frame
             
-            auto target_pose_in_world = utils::transformToWorldFrame(
-                part_pose_in_frame,
-                agv);
+            // auto target_pose_in_world = utils::transformToWorldFrame(
+            //     part_pose_in_frame,
+            //     agv);
 
             geometry_msgs::Pose gantry_arm_ee_link = gantry_arm_group_.getCurrentPose().pose;
             auto flat_orientation = utils::quaternionFromEuler(0, 1.57, 0);

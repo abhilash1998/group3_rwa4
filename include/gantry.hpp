@@ -59,7 +59,7 @@
          * @return true - Part sucessfully picked up
          * @return false - Part was not picked up sucessfully
          */
-        bool placePart(geometry_msgs::Pose part_init_pose, geometry_msgs::Pose part_pose_in_frame,std::string part_type, std::string agv);
+        bool placePart(geometry_msgs::Pose part_init_pose, geometry_msgs::Pose part_pose_in_frame,std::string part_type, std::string agv,bool flip_);
         void testPreset(const std::vector<GantryPresetLocation>& preset_list);
         void movePart(std::string part_type, std::string camera_frame, geometry_msgs::Pose goal_in_tray_frame, std::string agv);
         void activateGripper();
